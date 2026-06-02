@@ -249,7 +249,7 @@ export function createCondorStore(repo: Repository, fx: FxProvider) {
         await repo.upsertExpense(updated);
         recomputed.push(updated);
       }
-      set({ expenses: recomputed });
+      set((state) => ({ expenses: state.expenses.map((e) => recomputed.find((r) => r.id === e.id) ?? e) }));
     },
 
     async exportAll() {
@@ -276,6 +276,5 @@ const defaultStore = createCondorStore(defaultRepo, defaultFx);
 export function useCondorStore(): CondorState;
 export function useCondorStore<U>(selector: (state: CondorState) => U): U;
 export function useCondorStore<U>(selector?: (state: CondorState) => U) {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   return useStore(defaultStore, selector as (state: CondorState) => U);
 }
