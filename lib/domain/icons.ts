@@ -13,7 +13,7 @@ import {
   PawPrint,
 } from 'lucide-react';
 
-export const ICON_KEYS: string[] = [
+export const ICON_KEYS = [
   'comida',
   'transporte',
   'ocio',
@@ -24,8 +24,14 @@ export const ICON_KEYS: string[] = [
   'salud',
   'servicios',
   'otros',
-  'mascotas',
-];
+  'mascotas', // available for user categories; not a preset
+] as const;
+
+export type IconKey = (typeof ICON_KEYS)[number];
+
+/** Type guard: returns true if `k` is a valid IconKey. */
+export const isIconKey = (k: string): k is IconKey =>
+  (ICON_KEYS as readonly string[]).includes(k);
 
 export const ICONS: Record<string, LucideIcon> = {
   comida: Utensils,

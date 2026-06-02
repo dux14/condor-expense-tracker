@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { Expense, Category, Settings, ExportBundle } from './types';
 
-export const KNOWN_CURRENCIES: string[] = [
+export const KNOWN_CURRENCIES = [
   'COP',
   'USD',
   'EUR',
@@ -13,7 +13,13 @@ export const KNOWN_CURRENCIES: string[] = [
   'PEN',
   'CAD',
   'JPY',
-];
+] as const;
+
+export type KnownCurrency = (typeof KNOWN_CURRENCIES)[number];
+
+/** Type guard: returns true if `c` is a recognised ISO currency code. */
+export const isKnownCurrency = (c: string): c is KnownCurrency =>
+  (KNOWN_CURRENCIES as readonly string[]).includes(c);
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -64,10 +70,13 @@ export const exportBundleSchema = z.object({
  */
 export function parseExpense(input: unknown): Expense {
   const result = expenseSchema.parse(input);
-  if (!KNOWN_CURRENCIES.includes(result.currency)) {
+  if (!isKnownCurrency(result.currency)) {
     console.warn(
       `[parseExpense] Unknown currency "${result.currency}" — not in KNOWN_CURRENCIES. Proceeding anyway.`,
     );
   }
+  // Zod's inferred type is structurally identical to the Expense interface;
+  // the narrow cast is needed only because optional fields infer as `T | undefined`
+  // whereas the interface declares them as `?: T`. Scoped and intentional.
   return result as Expense;
 }

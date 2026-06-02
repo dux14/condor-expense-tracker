@@ -1,6 +1,6 @@
 import type { Category } from './types';
 import { paletteColorFor } from './palette';
-import { ICON_KEYS } from './icons';
+import { ICON_KEYS, isIconKey } from './icons';
 
 export const OTROS_ID = 'preset-otros';
 
@@ -21,6 +21,6 @@ export const PRESET_CATEGORIES: Category[] = PRESET_DEFS.map((def, index) => ({
   id: `preset-${def.key}`,
   name: def.name,
   color: paletteColorFor(index),
-  icon: def.key in Object.fromEntries(ICON_KEYS.map((k) => [k, k])) ? def.key : ICON_KEYS[0],
+  icon: isIconKey(def.key) ? def.key : ICON_KEYS[0],
   isPreset: true,
 }));

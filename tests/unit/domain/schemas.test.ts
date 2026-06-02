@@ -82,12 +82,32 @@ describe('categorySchema', () => {
     const result = categorySchema.safeParse(validCategory);
     expect(result.success).toBe(true);
   });
+
+  it('rejects non-boolean isPreset', () => {
+    const result = categorySchema.safeParse({ ...validCategory, isPreset: 'yes' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects non-boolean hidden', () => {
+    const result = categorySchema.safeParse({ ...validCategory, hidden: 1 });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe('settingsSchema', () => {
   it('parses valid settings', () => {
     const result = settingsSchema.safeParse(validSettings);
     expect(result.success).toBe(true);
+  });
+
+  it('rejects invalid locale "fr"', () => {
+    const result = settingsSchema.safeParse({ ...validSettings, locale: 'fr' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects invalid theme "sepia"', () => {
+    const result = settingsSchema.safeParse({ ...validSettings, theme: 'sepia' });
+    expect(result.success).toBe(false);
   });
 });
 
