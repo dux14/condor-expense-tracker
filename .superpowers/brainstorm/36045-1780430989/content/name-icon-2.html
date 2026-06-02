@@ -1,0 +1,87 @@
+<h2>More name + icon directions</h2>
+<p class="subtitle">Batch two — four new personalities. Click any that clicks, or mix with batch one (name from one, icon from another).</p>
+
+<style>
+  .tile {
+    width: 96px; height: 96px; border-radius: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  }
+  .tile svg { width: 52px; height: 52px; }
+  .nm { font-size: 1.35rem; font-weight: 700; letter-spacing: -.01em; }
+  .tag { font-size: .82rem; opacity: .7; margin-top: 2px; }
+  .vibe { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; opacity: .55; margin-top: 8px; }
+</style>
+
+<div class="cards">
+  <div class="card" data-choice="goteo" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="tile" style="background:linear-gradient(135deg,#89CFF0,#A2D2FF);">
+        <svg viewBox="0 0 24 24" fill="#fff" stroke="none">
+          <path d="M12 3 C12 3 5 11 5 15.5 A7 7 0 0 0 19 15.5 C19 11 12 3 12 3 Z"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Goteo</div>
+      <div class="tag">"Tu plata se va gota a gota."</div>
+      <div class="vibe">Evocative · the slow leak</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="lupa" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="tile" style="background:linear-gradient(135deg,#CDB4DB,#D8BBFF);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="10.5" cy="10.5" r="6"/>
+          <path d="M15 15 L20 20"/>
+          <path d="M8 10.5 a2.5 2.5 0 0 1 2.5 -2.5" stroke-width="1.6"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Lupa</div>
+      <div class="tag">"Mira a dónde se va cada peso."</div>
+      <div class="vibe">Clarity · examine · insight</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="lucas" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="tile" style="background:linear-gradient(135deg,#FFD6A5,#FFC685);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8">
+          <ellipse cx="12" cy="7" rx="6.5" ry="2.6" fill="#fff" stroke="none"/>
+          <path d="M5.5 7 v4 a6.5 2.6 0 0 0 13 0 v-4" />
+          <path d="M5.5 11 v4 a6.5 2.6 0 0 0 13 0 v-4" />
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Lucas</div>
+      <div class="tag">"¿En qué se fueron las lucas?"</div>
+      <div class="vibe">Local slang · playful · Colombian</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="radar" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="tile" style="background:linear-gradient(135deg,#9EE6CB,#B5EAD7);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9"/>
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 12 L19 7" stroke-width="2.4"/>
+          <circle cx="16" cy="9" r="1.3" fill="#fff" stroke="none"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Radar</div>
+      <div class="tag">"Detecta cada gasto."</div>
+      <div class="vibe">Tech · alert · in-control</div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px">
+  Now eight total across both screens. If none nail it, tell me the <em>feeling</em> you want (playful / premium / techy / slangy / calm) and I'll generate a tighter set. Still partial to <strong>Hormiga</strong> or <strong>Goteo</strong> for how precisely they name the leak.
+</p>

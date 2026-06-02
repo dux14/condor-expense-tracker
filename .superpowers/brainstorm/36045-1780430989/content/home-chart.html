@@ -1,0 +1,92 @@
+<h2>Home screen — the ranked-spending centerpiece</h2>
+<p class="subtitle">"All this month's spending, largest → smallest." Same data, three layouts. Mobile mockups (dark mode). Click the one that reads best at a glance.</p>
+
+<style>
+  .phone{ width:250px; background:#1A1F2B; border-radius:26px; padding:16px 14px 0;
+    box-shadow:0 12px 30px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.05); color:#E7EAF0; }
+  .ph-h{ font-size:.7rem; opacity:.6; }
+  .ph-tot{ font-size:1.5rem; font-weight:700; letter-spacing:-.02em; margin:2px 0 14px; }
+  .ph-tot small{ font-size:.65rem; font-weight:500; opacity:.5; }
+  .row{ display:flex; align-items:center; gap:8px; margin-bottom:11px; font-size:.72rem; }
+  .dot{ width:22px;height:22px;border-radius:7px; display:flex;align-items:center;justify-content:center; font-size:.8rem; flex:0 0 auto;}
+  .barwrap{ flex:1; }
+  .barwrap .nm{ display:flex; justify-content:space-between; margin-bottom:3px; }
+  .bar{ height:7px; border-radius:4px; }
+  .amt{ opacity:.85; }
+  .pct{ opacity:.5; font-size:.62rem; }
+  .nav{ display:flex; justify-content:space-around; margin-top:8px; padding:10px 0 12px; border-top:1px solid rgba(255,255,255,.07); font-size:.6rem; opacity:.55;}
+  .nav .on{ color:#7EE8C9; opacity:1; }
+  .tm{ display:flex; flex-wrap:wrap; gap:4px; }
+  .tm div{ border-radius:8px; padding:7px; font-size:.6rem; color:#13202b; font-weight:600; overflow:hidden;}
+  .legend{ font-size:.66rem; }
+  .legend div{ display:flex; align-items:center; gap:6px; margin-bottom:7px; }
+  .lg{ width:9px;height:9px;border-radius:3px; }
+</style>
+
+<div class="cards">
+
+  <!-- A: Ranked bars -->
+  <div class="card" data-choice="bars" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="phone">
+        <div class="ph-h">Junio 2026 · Total</div>
+        <div class="ph-tot">$3.015.000 <small>COP</small></div>
+        <div class="row"><div class="dot" style="background:#FF9EB1">🍔</div><div class="barwrap"><div class="nm"><span>Comida</span><span class="amt">$1.250.000</span></div><div class="bar" style="width:100%;background:#FF9EB1"></div></div></div>
+        <div class="row"><div class="dot" style="background:#9EC1FF">🚌</div><div class="barwrap"><div class="nm"><span>Transporte</span><span class="amt">$680.000</span></div><div class="bar" style="width:54%;background:#9EC1FF"></div></div></div>
+        <div class="row"><div class="dot" style="background:#C9B6FF">🎬</div><div class="barwrap"><div class="nm"><span>Ocio</span><span class="amt">$420.000</span></div><div class="bar" style="width:34%;background:#C9B6FF"></div></div></div>
+        <div class="row"><div class="dot" style="background:#FFD98A">✈️</div><div class="barwrap"><div class="nm"><span>Turismo</span><span class="amt">$390.000</span></div><div class="bar" style="width:31%;background:#FFD98A"></div></div></div>
+        <div class="row"><div class="dot" style="background:#7EE8C9">🎮</div><div class="barwrap"><div class="nm"><span>Videojuegos</span><span class="amt">$180.000</span></div><div class="bar" style="width:14%;background:#7EE8C9"></div></div></div>
+        <div class="nav"><span class="on">● Inicio</span><span>＋ Añadir</span><span>◷ Histórico</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>A · Ranked bars</h3><p>Literal "largest→smallest." Most glanceable + precise. Tap a bar → its transactions. My pick.</p></div>
+  </div>
+
+  <!-- B: Treemap -->
+  <div class="card" data-choice="treemap" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="phone">
+        <div class="ph-h">Junio 2026 · Total</div>
+        <div class="ph-tot">$3.015.000 <small>COP</small></div>
+        <div class="tm" style="height:190px; align-content:flex-start;">
+          <div style="background:#FF9EB1; width:100%; height:78px;">Comida<br>$1.250.000 · 41%</div>
+          <div style="background:#9EC1FF; width:54%; height:52px;">Transporte<br>$680k</div>
+          <div style="background:#C9B6FF; width:42%; height:52px;">Ocio<br>$420k</div>
+          <div style="background:#FFD98A; width:46%; height:42px;">Turismo $390k</div>
+          <div style="background:#7EE8C9; width:48%; height:42px;">Juegos $180k</div>
+        </div>
+        <div class="nav"><span class="on">● Inicio</span><span>＋ Añadir</span><span>◷ Histórico</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>B · Treemap</h3><p>Area = spend. Dominant categories pop instantly. Trendy, dense. Harder to read exact order at small sizes.</p></div>
+  </div>
+
+  <!-- C: Donut + list -->
+  <div class="card" data-choice="donut" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="phone">
+        <div class="ph-h">Junio 2026 · Total</div>
+        <div class="ph-tot">$3.015.000 <small>COP</small></div>
+        <div style="display:flex; justify-content:center; margin:6px 0 14px;">
+          <div style="width:120px;height:120px;border-radius:50%;
+            background:conic-gradient(#FF9EB1 0 41%,#9EC1FF 41% 64%,#C9B6FF 64% 78%,#FFD98A 78% 91%,#7EE8C9 91% 100%);
+            display:flex;align-items:center;justify-content:center;">
+            <div style="width:74px;height:74px;border-radius:50%;background:#1A1F2B;display:flex;align-items:center;justify-content:center;font-size:.6rem;opacity:.7;text-align:center;">5<br>categorías</div>
+          </div>
+        </div>
+        <div class="legend">
+          <div><span class="lg" style="background:#FF9EB1"></span>Comida<span style="margin-left:auto;opacity:.6">41%</span></div>
+          <div><span class="lg" style="background:#9EC1FF"></span>Transporte<span style="margin-left:auto;opacity:.6">23%</span></div>
+          <div><span class="lg" style="background:#C9B6FF"></span>Ocio<span style="margin-left:auto;opacity:.6">14%</span></div>
+        </div>
+        <div class="nav"><span class="on">● Inicio</span><span>＋ Añadir</span><span>◷ Histórico</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>C · Donut + list</h3><p>Familiar proportion view. Pretty, but "largest→smallest" is less explicit than bars.</p></div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:20px">
+  <strong>My pick: A (Ranked bars).</strong> It matches your exact ask ("segmentados del más grande al más pequeño"), is the most glanceable on mobile, scales to many categories, and each bar taps through to its transactions. We can add a small donut as a secondary "proportion" toggle. Treemap is a great <em>secondary</em> view for power users.
+</p>

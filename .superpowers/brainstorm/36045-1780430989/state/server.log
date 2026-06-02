@@ -1,0 +1,9 @@
+{"type":"server-started","port":49484,"host":"0.0.0.0","url_host":"localhost","url":"http://localhost:49484","screen_dir":"/home/samu/code/personal/Mark-VI-Mny/.superpowers/brainstorm/36045-1780430989/content","state_dir":"/home/samu/code/personal/Mark-VI-Mny/.superpowers/brainstorm/36045-1780430989/state"}
+{"type":"screen-added","file":"/home/samu/code/personal/Mark-VI-Mny/.superpowers/brainstorm/36045-1780430989/content/name-icon.html"}
+{"type":"screen-added","file":"/home/samu/code/personal/Mark-VI-Mny/.superpowers/brainstorm/36045-1780430989/content/name-icon-2.html"}
+{"type":"screen-added","file":"/home/samu/code/personal/Mark-VI-Mny/.superpowers/brainstorm/36045-1780430989/content/name-icon-3.html"}
+{"type":"screen-added","file":"/home/samu/code/personal/Mark-VI-Mny/.superpowers/brainstorm/36045-1780430989/content/research-direction.html"}
+{"type":"screen-added","file":"/home/samu/code/personal/Mark-VI-Mny/.superpowers/brainstorm/36045-1780430989/content/bird-names.html"}
+{"type":"screen-added","file":"/home/samu/code/personal/Mark-VI-Mny/.superpowers/brainstorm/36045-1780430989/content/home-chart.html"}
+{"type":"screen-added","file":"/home/samu/code/personal/Mark-VI-Mny/.superpowers/brainstorm/36045-1780430989/content/waiting.html"}
+{"type":"server-stopped","reason":"owner process exited"}

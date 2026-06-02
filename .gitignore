@@ -1,0 +1,23 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# next.js
+.next
+out
+
+# testing
+coverage
+test-results
+playwright-report
+.playwright
+
+# typescript
+*.tsbuildinfo
+
+# misc
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example

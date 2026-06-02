@@ -1,0 +1,102 @@
+<h2>Radar family — new visual style</h2>
+<p class="subtitle">Same "detect / track your spending" concept as Radar, new names + new icon treatment: dark tiles, pastel-neon line glyphs, subtle ping rings. Click a favorite.</p>
+
+<style>
+  .dtile {
+    width: 100px; height: 100px; border-radius: 26px;
+    background: radial-gradient(120% 120% at 30% 20%, #2A3142, #1A1F2B);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px; position: relative; overflow: hidden;
+    box-shadow: 0 10px 28px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.05);
+  }
+  .dtile svg { width: 54px; height: 54px; position: relative; z-index: 2; }
+  .ring {
+    position: absolute; border-radius: 50%; opacity: .25;
+    border: 1.5px solid currentColor;
+  }
+  .nm { font-size: 1.35rem; font-weight: 700; letter-spacing: -.01em; }
+  .tag { font-size: .82rem; opacity: .7; margin-top: 2px; }
+  .vibe { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; opacity: .55; margin-top: 8px; }
+  .glow { filter: drop-shadow(0 0 6px currentColor); }
+</style>
+
+<div class="cards">
+  <div class="card" data-choice="sonar" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="dtile" style="color:#7EE8C9;">
+        <span class="ring" style="width:46px;height:46px;"></span>
+        <span class="ring" style="width:74px;height:74px;opacity:.14;"></span>
+        <svg class="glow" viewBox="0 0 24 24" fill="none" stroke="#7EE8C9" stroke-width="1.9" stroke-linecap="round">
+          <path d="M12 20 a8 8 0 0 1 0 -16" opacity=".5"/>
+          <path d="M12 17 a5 5 0 0 1 0 -10" opacity=".75"/>
+          <path d="M12 14 a2 2 0 0 1 0 -4"/>
+          <circle cx="12" cy="12" r="1.4" fill="#7EE8C9" stroke="none"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Sonar</div>
+      <div class="tag">"Detecta cada gasto por eco."</div>
+      <div class="vibe">Clean · techy · ES + EN</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="pulso" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="dtile" style="color:#FF9E9E;">
+        <span class="ring" style="width:60px;height:60px;opacity:.12;"></span>
+        <svg class="glow" viewBox="0 0 24 24" fill="none" stroke="#FF9E9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12 H7 L9.5 5 L13 19 L15.5 12 H21"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Pulso</div>
+      <div class="tag">"El pulso de tu plata."</div>
+      <div class="vibe">Alive · rhythm · vital</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="rastro" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="dtile" style="color:#C9B6FF;">
+        <span class="ring" style="width:64px;height:64px;opacity:.12;"></span>
+        <svg class="glow" viewBox="0 0 24 24" fill="none" stroke="#C9B6FF" stroke-width="2" stroke-linecap="round">
+          <circle cx="5" cy="18" r=".9" opacity=".35" fill="#C9B6FF" stroke="none"/>
+          <circle cx="8.5" cy="15" r="1.1" opacity=".5" fill="#C9B6FF" stroke="none"/>
+          <circle cx="12" cy="11.5" r="1.4" opacity=".7" fill="#C9B6FF" stroke="none"/>
+          <circle cx="16" cy="7.5" r="2.4" fill="#C9B6FF" stroke="none"/>
+          <path d="M5 18 Q9 16 12 11.5 T16 7.5" opacity=".4"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Rastro</div>
+      <div class="tag">"Sigue el rastro de tu dinero."</div>
+      <div class="vibe">Trail · trace · investigative</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="faro" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="dtile" style="color:#FFD98A;">
+        <span class="ring" style="width:70px;height:70px;opacity:.1;"></span>
+        <svg class="glow" viewBox="0 0 24 24" fill="none" stroke="#FFD98A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 11 L6 4 M12 11 L18 4 M12 11 L4 9 M12 11 L20 9" opacity=".55"/>
+          <circle cx="12" cy="12.5" r="2"/>
+          <path d="M10.5 14 L9.5 21 H14.5 L13.5 14"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Faro</div>
+      <div class="tag">"Luz sobre tus gastos."</div>
+      <div class="vibe">Beacon · guidance · clarity</div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px">
+  <strong>My pick here: Sonar.</strong> It keeps Radar's "detect your spending" energy but is shorter, reads identically in Spanish and English, and the ping-icon is iconic and minimal. <strong>Pulso</strong> is the close runner-up if you want something warmer/alive.<br><br>
+  Want me to also try this dark-tile style applied to the <em>actual</em> name "Radar", or push a totally different icon style (flat duotone, rounded-square mascot, monogram)?
+</p>

@@ -1,0 +1,88 @@
+<h2>Pick a name + icon direction</h2>
+<p class="subtitle">Four personalities for the same app. Click the one that resonates — we'll refine the winner. (Icons shown as pastel app-tile concepts.)</p>
+
+<style>
+  .tile {
+    width: 96px; height: 96px; border-radius: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  }
+  .tile svg { width: 52px; height: 52px; }
+  .nm { font-size: 1.35rem; font-weight: 700; letter-spacing: -.01em; }
+  .tag { font-size: .82rem; opacity: .7; margin-top: 2px; }
+  .vibe { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; opacity: .55; margin-top: 8px; }
+</style>
+
+<div class="cards">
+  <div class="card" data-choice="hormiga" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="tile" style="background:linear-gradient(135deg,#FFB4A2,#FFCDB2);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="5.5" r="2.2" fill="#fff" stroke="none"/>
+          <circle cx="12" cy="11" r="2.6" fill="#fff" stroke="none"/>
+          <circle cx="12" cy="17" r="3" fill="#fff" stroke="none"/>
+          <path d="M10 9 L6 7 M14 9 L18 7 M9.5 12 L5 13 M14.5 12 L19 13 M10 16 L6 19 M14 16 L18 19"/>
+          <path d="M11 4 L9.5 2 M13 4 L14.5 2"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Hormiga</div>
+      <div class="tag">"Caza tus gastos hormiga."</div>
+      <div class="vibe">Playful · culturally on-point</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="caudal" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="tile" style="background:linear-gradient(135deg,#A2D2FF,#BDE0FE);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+          <path d="M3 8 C7 5, 9 11, 13 8 S19 5, 21 8"/>
+          <path d="M3 13 C7 10, 9 16, 13 13 S19 10, 21 13"/>
+          <path d="M3 18 C7 15, 9 21, 13 18 S19 15, 21 18"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Caudal</div>
+      <div class="tag">"Hacia dónde fluye tu plata."</div>
+      <div class="vibe">Calm · premium · elegant</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="cuanto" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="tile" style="background:linear-gradient(135deg,#CDB4DB,#E0C3FC);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="8.5"/>
+          <path d="M9.5 9.5 a2.6 2.6 0 1 1 3.2 3.9 c-.8.5-.9 1-.9 1.8"/>
+          <circle cx="11.9" cy="17.4" r=".4" fill="#fff" stroke="none"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Cuánto</div>
+      <div class="tag">"¿A dónde se fue? Ya lo sabes."</div>
+      <div class="vibe">Direct · friendly · clear</div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="lumo" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="tile" style="background:linear-gradient(135deg,#B5EAD7,#C7F9CC);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z" fill="#fff" stroke="none"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="nm">Lumo</div>
+      <div class="tag">"Tu dinero, claro como el día."</div>
+      <div class="vibe">Modern · brandable · neutral</div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px">
+  <strong>My pick: Hormiga.</strong> "Gastos hormiga" is exactly your pain — the small invisible leaks that drain the month. It's memorable, warm, and instantly explains what the app does to any Spanish speaker. Great icon potential too. But pick whatever clicks.
+</p>
