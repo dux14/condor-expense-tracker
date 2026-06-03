@@ -31,6 +31,11 @@
     "vsPrev": "vs",
     "viewBars": "Barras",
     "viewDonut": "Dona",
-    "viewTreemap": "Treemap"
+    "viewTreemap": "Treemap",
+    "today": "HOY",
+    "chartSummaryBars": "Gráfica de barras: categorías de gasto",
+    "chartSummaryDonut": "Dona: distribución de gasto por categoría",
+    "chartSummaryTreemap": "Mapa de árbol: gasto por categoría",
+    "chartSummaryDays": "Gasto diario del mes"
   }
 }

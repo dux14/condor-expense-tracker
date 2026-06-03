@@ -31,6 +31,11 @@
     "vsPrev": "vs",
     "viewBars": "Bars",
     "viewDonut": "Donut",
-    "viewTreemap": "Treemap"
+    "viewTreemap": "Treemap",
+    "today": "TODAY",
+    "chartSummaryBars": "Bar chart: spending categories",
+    "chartSummaryDonut": "Donut: spending by category",
+    "chartSummaryTreemap": "Treemap: spending by category",
+    "chartSummaryDays": "Daily spending for the month"
   }
 }

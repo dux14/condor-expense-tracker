@@ -257,3 +257,18 @@
     animation: condor-wing 3.2s ease-in-out infinite;
   }
 }
+
+/* ────────────────────────────────────────────
+   Chart bar grow-in animation
+   ──────────────────────────────────────────── */
+@keyframes bar-grow {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bar-grow {
+    animation: bar-grow 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transform-origin: left center;
+  }
+}
