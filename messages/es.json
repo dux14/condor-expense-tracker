@@ -6,6 +6,16 @@
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "confirm": "Confirmar",
-    "loading": "Cargando…"
+    "loading": "Cargando…",
+    "no_conversion": "sin conversión"
+  },
+  "Categorias": {
+    "title_new": "Nueva categoría",
+    "title_edit": "Editar categoría",
+    "name_label": "Nombre",
+    "name_placeholder": "Ej. Gimnasio",
+    "color_label": "Color",
+    "icon_label": "Ícono",
+    "save": "Guardar"
   }
 }

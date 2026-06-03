@@ -6,6 +6,16 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "confirm": "Confirm",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "no_conversion": "no conversion"
+  },
+  "Categorias": {
+    "title_new": "New category",
+    "title_edit": "Edit category",
+    "name_label": "Name",
+    "name_placeholder": "E.g. Gym",
+    "color_label": "Color",
+    "icon_label": "Icon",
+    "save": "Save"
   }
 }
