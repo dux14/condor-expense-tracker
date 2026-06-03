@@ -17,5 +17,17 @@
     "color_label": "Color",
     "icon_label": "Icon",
     "save": "Save"
+  },
+  "Nav": {
+    "home": "Home",
+    "add": "Add",
+    "history": "History"
+  },
+  "Inicio": {
+    "spentThisMonth": "Spent this month",
+    "vsPrev": "vs",
+    "viewBars": "Bars",
+    "viewDonut": "Donut",
+    "viewTreemap": "Treemap"
   }
 }

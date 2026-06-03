@@ -4,6 +4,7 @@ import {
   todayMonthKey,
   daysInMonth,
   prevMonthKey,
+  nextMonthKey,
   isInMonth,
   formatMonthLabel,
 } from '@/lib/format/date'
@@ -78,6 +79,20 @@ describe('prevMonthKey', () => {
 
   it('handles mid-year', () => {
     expect(prevMonthKey('2026-07')).toBe('2026-06')
+  })
+})
+
+describe('nextMonthKey', () => {
+  it('goes from June to July', () => {
+    expect(nextMonthKey('2026-06')).toBe('2026-07')
+  })
+
+  it('wraps from December to next January', () => {
+    expect(nextMonthKey('2026-12')).toBe('2027-01')
+  })
+
+  it('handles mid-year', () => {
+    expect(nextMonthKey('2026-07')).toBe('2026-08')
   })
 })
 

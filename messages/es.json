@@ -17,5 +17,17 @@
     "color_label": "Color",
     "icon_label": "Ícono",
     "save": "Guardar"
+  },
+  "Nav": {
+    "home": "Inicio",
+    "add": "Añadir",
+    "history": "Histórico"
+  },
+  "Inicio": {
+    "spentThisMonth": "Gastado este mes",
+    "vsPrev": "vs",
+    "viewBars": "Barras",
+    "viewDonut": "Dona",
+    "viewTreemap": "Treemap"
   }
 }

@@ -6,6 +6,7 @@ import { useCondorStore } from '@/lib/store/store';
 import { resolveThemeClass } from '@/lib/theme';
 import { getMessages } from '@/lib/i18n/messages';
 import CondorLogo from '@/components/common/CondorLogo';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const hydrate = useCondorStore((s) => s.hydrate);
@@ -48,6 +49,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       ) : (
         children
       )}
+      <Toaster theme="system" />
     </NextIntlClientProvider>
   );
 }

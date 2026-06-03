@@ -1,4 +1,5 @@
 import {
+  addMonths,
   format,
   getDaysInMonth,
   parseISO,
@@ -41,6 +42,13 @@ export function prevMonthKey(mk: string): string {
   const date = parseISO(`${mk}-01`)
   const prev = subMonths(date, 1)
   return format(prev, 'yyyy-MM')
+}
+
+/** '2026-06' → '2026-07'; '2026-12' → '2027-01' */
+export function nextMonthKey(mk: string): string {
+  const date = parseISO(`${mk}-01`)
+  const next = addMonths(date, 1)
+  return format(next, 'yyyy-MM')
 }
 
 /** Whether a date string falls within the given month key */
