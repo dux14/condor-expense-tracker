@@ -50,9 +50,8 @@ export function Treemap({
         ))}
       </ol>
 
-      {/* Visual treemap */}
+      {/* Visual treemap — not aria-hidden so focusable buttons inside are reachable */}
       <div
-        aria-hidden="true"
         className="relative overflow-hidden rounded-condor"
         style={{ width, height }}
       >

@@ -51,7 +51,7 @@ export default function InicioPage() {
   const isEmpty = monthExpenses.length === 0
 
   return (
-    <div className="min-h-dvh bg-bg pb-28">
+    <main className="min-h-dvh bg-bg pb-28">
       <div className="mx-auto max-w-[480px] px-5">
 
         {/* ── Header ─────────────────────────────────────────────────── */}
@@ -148,6 +148,6 @@ export default function InicioPage() {
       </div>
 
       <BottomNav />
-    </div>
+    </main>
   )
 }

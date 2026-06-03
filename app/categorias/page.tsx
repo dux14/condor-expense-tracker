@@ -87,7 +87,7 @@ export default function CategoriasPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-bg pb-28">
+    <main className="min-h-dvh bg-bg pb-28">
       <div className="mx-auto max-w-[480px] px-5">
 
         {/* ── Top bar ───────────────────────────────────────────────── */}
@@ -227,6 +227,6 @@ export default function CategoriasPage() {
       />
 
       <BottomNav />
-    </div>
+    </main>
   )
 }

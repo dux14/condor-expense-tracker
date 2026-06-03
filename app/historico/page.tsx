@@ -87,7 +87,7 @@ function HistoricoContent() {
   }
 
   return (
-    <div className="min-h-dvh bg-bg pb-28">
+    <main className="min-h-dvh bg-bg pb-28">
       <div className="mx-auto max-w-[480px] px-5">
 
         {/* ── Header ─────────────────────────────────────────────────── */}
@@ -158,7 +158,7 @@ function HistoricoContent() {
       </div>
 
       <BottomNav />
-    </div>
+    </main>
   )
 }
 

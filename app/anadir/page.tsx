@@ -144,7 +144,7 @@ function AnadirContent() {
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-dvh bg-bg">
+    <main className="min-h-dvh bg-bg">
       <div className="mx-auto flex max-w-[480px] flex-col px-4 pb-8">
 
         {/* ── Top bar ─────────────────────────────────────────────────── */}
@@ -338,7 +338,7 @@ function AnadirContent() {
         destructive
         onConfirm={handleDelete}
       />
-    </div>
+    </main>
   )
 }
 

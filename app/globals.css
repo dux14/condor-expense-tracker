@@ -120,8 +120,10 @@
   --text: #1A1F2B;
   --muted-txt: #5A6470;
   --outline: #D8D8D2;
-  --condor-primary: #7EE8C9;
-  --on-primary: #0C2A22;
+  /* Darker teal in light mode so text-condor-primary passes WCAG AA (5.1:1 on #FAFAF7).
+     Dark mode keeps the mint #7EE8C9 (12.6:1 on #0E131F). */
+  --condor-primary: #0F7A5A;
+  --on-primary: #FFFFFF;
   --danger: #E5484D;
   --cat-lavender: #C9B6FF;
   --cat-pink: #FF9EB1;

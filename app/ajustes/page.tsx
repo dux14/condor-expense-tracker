@@ -96,7 +96,7 @@ export default function AjustesPage() {
   ]
 
   return (
-    <div className="min-h-dvh bg-bg pb-28">
+    <main className="min-h-dvh bg-bg pb-28">
       <div className="mx-auto max-w-[480px] px-5">
 
         {/* ── Top bar ───────────────────────────────────────────────── */}
@@ -127,7 +127,10 @@ export default function AjustesPage() {
                 value={settings.baseCurrency}
                 onValueChange={handleBaseCurrencyChange}
               >
-                <SelectTrigger className="h-8 border-outline bg-surface-2 text-text text-sm">
+                <SelectTrigger
+                  aria-label={t('baseCurrency')}
+                  className="h-8 border-outline bg-surface-2 text-text text-sm"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -148,7 +151,10 @@ export default function AjustesPage() {
                 value={settings.locale}
                 onValueChange={handleLocaleChange}
               >
-                <SelectTrigger className="h-8 border-outline bg-surface-2 text-text text-sm">
+                <SelectTrigger
+                  aria-label={t('language')}
+                  className="h-8 border-outline bg-surface-2 text-text text-sm"
+                >
                   <SelectValue>
                     {(v: string | null) =>
                       localeOptions.find((o) => o.value === v)?.label ?? v
@@ -184,7 +190,10 @@ export default function AjustesPage() {
                 value={settings.dashboardView}
                 onValueChange={handleDashboardViewChange}
               >
-                <SelectTrigger className="h-8 border-outline bg-surface-2 text-text text-sm">
+                <SelectTrigger
+                  aria-label={t('homeView')}
+                  className="h-8 border-outline bg-surface-2 text-text text-sm"
+                >
                   <SelectValue>
                     {(v: string | null) =>
                       viewOptions.find((o) => o.value === v)?.label ?? v
@@ -263,6 +272,6 @@ export default function AjustesPage() {
       />
 
       <BottomNav />
-    </div>
+    </main>
   )
 }
