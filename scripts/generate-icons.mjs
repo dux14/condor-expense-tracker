@@ -5,12 +5,13 @@
  */
 
 import sharp from '../node_modules/sharp/lib/index.js';
-import { mkdirSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = join(__dirname, '..', 'public', 'icons');
+const APP_DIR = join(__dirname, '..', 'app');
 mkdirSync(OUT_DIR, { recursive: true });
 
 /**
@@ -103,9 +104,59 @@ async function generate(filename, size, padding) {
   console.log(`  generated ${outPath} (${size}x${size}, padding=${padding})`);
 }
 
+/** Render the condor tile to a PNG buffer at an exact size. */
+async function pngBuffer(size) {
+  const svgBuffer = Buffer.from(buildSVG(size, 0), 'utf8');
+  return sharp(svgBuffer).resize(size, size).png().toBuffer();
+}
+
+/** Write a PNG of the condor tile to an absolute path. */
+async function writePng(absPath, size) {
+  writeFileSync(absPath, await pngBuffer(size));
+  console.log(`  generated ${absPath} (${size}x${size})`);
+}
+
+/** Pack multiple PNG buffers into a valid multi-size .ico (PNG-encoded entries). */
+function buildIco(images) {
+  const count = images.length;
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0); // reserved
+  header.writeUInt16LE(1, 2); // type = icon
+  header.writeUInt16LE(count, 4);
+  const dir = Buffer.alloc(16 * count);
+  let offset = 6 + 16 * count;
+  const datas = [];
+  images.forEach((img, i) => {
+    const e = 16 * i;
+    dir.writeUInt8(img.size >= 256 ? 0 : img.size, e + 0); // width (0 = 256)
+    dir.writeUInt8(img.size >= 256 ? 0 : img.size, e + 1); // height
+    dir.writeUInt8(0, e + 2); // palette
+    dir.writeUInt8(0, e + 3); // reserved
+    dir.writeUInt16LE(1, e + 4); // planes
+    dir.writeUInt16LE(32, e + 6); // bit depth
+    dir.writeUInt32LE(img.buf.length, e + 8);
+    dir.writeUInt32LE(offset, e + 12);
+    offset += img.buf.length;
+    datas.push(img.buf);
+  });
+  return Buffer.concat([header, dir, ...datas]);
+}
+
 console.log('Generating Cóndor PWA icons…');
 await generate('icon-192.png', 192, 0);
 await generate('icon-512.png', 512, 0);
 // Maskable: ~12% safe-zone padding on each side (12% of 512 = ~61px)
 await generate('icon-maskable-512.png', 512, 62);
+
+console.log('Generating favicon + app icons…');
+// Modern favicon (Next App Router auto-links app/icon.png) + apple touch icon
+await writePng(join(APP_DIR, 'icon.png'), 256);
+await writePng(join(APP_DIR, 'apple-icon.png'), 180);
+// Legacy / scraper favicon.ico (multi-size: 16, 32, 48) — replaces the default
+const icoSizes = [16, 32, 48];
+const icoImages = await Promise.all(
+  icoSizes.map(async (size) => ({ size, buf: await pngBuffer(size) })),
+);
+writeFileSync(join(APP_DIR, 'favicon.ico'), buildIco(icoImages));
+console.log(`  generated ${join(APP_DIR, 'favicon.ico')} (16/32/48)`);
 console.log('Done.');

@@ -22,9 +22,8 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Cóndor",
   },
-  icons: {
-    apple: "/icons/icon-192.png",
-  },
+  // Favicon + apple-icon are provided by the app/ file conventions
+  // (app/favicon.ico, app/icon.png, app/apple-icon.png) — Next auto-links them.
 };
 
 export const viewport: Viewport = {
