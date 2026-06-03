@@ -7,7 +7,10 @@
     "delete": "Eliminar",
     "confirm": "Confirmar",
     "loading": "Cargando…",
-    "no_conversion": "sin conversión"
+    "no_conversion": "sin conversión",
+    "back": "Volver",
+    "editNamed": "Editar {name}",
+    "deleteNamed": "Eliminar {name}"
   },
   "Categorias": {
     "title": "Categorías",
@@ -23,7 +26,11 @@
     "newCategory": "Nueva categoría",
     "palette": "PALETA SUGERIDA",
     "reassignWarning": "Los gastos de esta categoría serán reasignados a Otros.",
-    "deleteTitle": "Eliminar categoría"
+    "deleteTitle": "Eliminar categoría",
+    "selectIcon": "Seleccionar ícono",
+    "colorSwatch": "Color {hex}",
+    "customColor": "Color personalizado",
+    "pickCustomColor": "Elegir color personalizado"
   },
   "Nav": {
     "home": "Inicio",
@@ -31,7 +38,9 @@
     "history": "Histórico",
     "mainNav": "Navegación principal",
     "prevMonth": "Mes anterior",
-    "nextMonth": "Mes siguiente"
+    "nextMonth": "Mes siguiente",
+    "categories": "Categorías",
+    "settings": "Ajustes"
   },
   "Inicio": {
     "spentThisMonth": "Gastado este mes",
@@ -89,6 +98,10 @@
     "newCategory": "Nueva",
     "futureWarning": "Fecha futura",
     "deleted": "Gasto eliminado",
-    "saveError": "No se pudo guardar"
+    "saveError": "No se pudo guardar",
+    "selectCurrency": "Seleccionar moneda",
+    "amountLabel": "Monto",
+    "dateTapToChange": "Fecha: {label}. Toca para cambiar.",
+    "todayPrefix": "Hoy · "
   }
 }

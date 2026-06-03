@@ -153,7 +153,7 @@ function AnadirContent() {
           <button
             type="button"
             onClick={() => router.back()}
-            aria-label="Volver"
+            aria-label={tCommon('back')}
             className={cn(
               'flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 rounded-full',
               'text-text transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-condor-primary',

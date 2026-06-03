@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { CATEGORY_PALETTE } from '@/lib/domain/palette'
 
@@ -17,6 +18,7 @@ export function ColorSwatchPicker({
   palette = [...CATEGORY_PALETTE],
   className,
 }: ColorSwatchPickerProps) {
+  const t = useTranslations('Categorias')
   const colorInputRef = React.useRef<HTMLInputElement>(null)
 
   // Normalize hex to uppercase for comparison
@@ -30,7 +32,7 @@ export function ColorSwatchPicker({
           <button
             key={hex}
             type="button"
-            aria-label={`Color ${hex}`}
+            aria-label={t('colorSwatch', { hex })}
             aria-pressed={isSelected}
             onClick={() => onChange(hex)}
             className={cn(
@@ -46,7 +48,7 @@ export function ColorSwatchPicker({
 
       {/* Custom color swatch — native color input styled as a circle */}
       <label
-        aria-label="Custom color"
+        aria-label={t('customColor')}
         className={cn(
           'relative size-8 cursor-pointer rounded-full transition-all duration-150',
           !palette.some((h) => h.toUpperCase() === normalizedValue)
@@ -59,7 +61,7 @@ export function ColorSwatchPicker({
               ? value
               : '#888888',
         }}
-        title="Custom color"
+        title={t('customColor')}
       >
         {/* Render a "+" hint if no custom color is active */}
         {palette.some((h) => h.toUpperCase() === normalizedValue) && (
@@ -73,7 +75,7 @@ export function ColorSwatchPicker({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 size-full cursor-pointer rounded-full opacity-0"
-          aria-label="Pick custom color"
+          aria-label={t('pickCustomColor')}
         />
       </label>
     </div>

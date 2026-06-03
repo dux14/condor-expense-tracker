@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { format, parseISO } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
+import { useTranslations } from 'next-intl'
 import { CalendarIcon, ChevronRightIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { todayKey } from '@/lib/format/date'
@@ -11,11 +12,6 @@ import type { Locale } from '@/lib/domain/types'
 const DATE_FNS_LOCALE = {
   es,
   en: enUS,
-}
-
-const TODAY_PREFIX: Record<Locale, string> = {
-  es: 'Hoy · ',
-  en: 'Today · ',
 }
 
 const DATE_FORMAT: Record<Locale, string> = {
@@ -36,6 +32,7 @@ export function DatePickerRow({
   locale,
   className,
 }: DatePickerRowProps) {
+  const t = useTranslations('Anadir')
   const inputRef = React.useRef<HTMLInputElement>(null)
 
   const isToday = value === todayKey()
@@ -43,7 +40,8 @@ export function DatePickerRow({
   const formattedDate = format(dateObj, DATE_FORMAT[locale], {
     locale: DATE_FNS_LOCALE[locale],
   })
-  const label = isToday ? `${TODAY_PREFIX[locale]}${formattedDate}` : formattedDate
+  const todayPrefix = t('todayPrefix')
+  const label = isToday ? `${todayPrefix}${formattedDate}` : formattedDate
 
   function handleRowClick() {
     if (inputRef.current) {
@@ -84,7 +82,7 @@ export function DatePickerRow({
           // Active press feel
           'active:opacity-80',
         )}
-        aria-label={`Date: ${label}. Tap to change.`}
+        aria-label={t('dateTapToChange', { label })}
       >
         <CalendarIcon className="size-[18px] shrink-0 text-muted-txt" />
         <span className="flex-1 text-left text-sm font-medium">{label}</span>

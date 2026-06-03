@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { parseAmount } from '@/lib/format/money'
 import type { Locale } from '@/lib/domain/types'
@@ -18,6 +19,7 @@ export interface AmountInputProps {
 
 export function AmountInput(props: AmountInputProps) {
   const { initialText = '', locale, onAmountChange, autoFocus = false, className } = props
+  const t = useTranslations('Anadir')
 
   const [text, setText] = React.useState(initialText)
 
@@ -36,7 +38,7 @@ export function AmountInput(props: AmountInputProps) {
       value={text}
       onChange={handleChange}
       autoFocus={autoFocus}
-      aria-label="Amount"
+      aria-label={t('amountLabel')}
       className={cn(
         // Full-width, transparent bg, no border of its own — parent supplies the surface
         'w-full min-w-0 bg-transparent text-right outline-none',

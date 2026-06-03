@@ -17,6 +17,7 @@ import { BottomNav } from '@/components/nav/BottomNav'
 
 export default function CategoriasPage() {
   const t = useTranslations('Categorias')
+  const tCommon = useTranslations('Common')
   const router = useRouter()
 
   const expenses = useCondorStore((s) => s.expenses)
@@ -94,7 +95,7 @@ export default function CategoriasPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            aria-label="Volver"
+            aria-label={tCommon('back')}
             className="flex items-center justify-center min-h-[40px] min-w-[40px] -ml-2 rounded-full text-muted-txt hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-condor-primary"
           >
             <ChevronLeft size={22} />
@@ -144,7 +145,7 @@ export default function CategoriasPage() {
                       <>
                         <button
                           type="button"
-                          aria-label={`Editar ${cat.name}`}
+                          aria-label={tCommon('editNamed', { name: cat.name })}
                           onClick={() =>
                             openEdit({
                               id: cat.id,
@@ -159,7 +160,7 @@ export default function CategoriasPage() {
                         </button>
                         <button
                           type="button"
-                          aria-label={`Eliminar ${cat.name}`}
+                          aria-label={tCommon('deleteNamed', { name: cat.name })}
                           onClick={() => setDeleteTarget(cat.id)}
                           className="rounded-full p-2 text-danger transition-colors hover:bg-surface-2"
                         >

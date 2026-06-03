@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import { ChevronRight, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Category } from '@/lib/domain/types'
@@ -26,6 +27,7 @@ export function CategoryListItem({
   actions,
   className,
 }: CategoryListItemProps) {
+  const tCommon = useTranslations('Common')
   const content = (
     <div
       className={cn(
@@ -55,7 +57,7 @@ export function CategoryListItem({
           {trailing === 'edit' && (
             <button
               type="button"
-              aria-label={`Edit ${category.name}`}
+              aria-label={tCommon('editNamed', { name: category.name })}
               onClick={(e) => {
                 e.stopPropagation()
                 onEdit?.()

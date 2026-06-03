@@ -28,6 +28,17 @@ export function SpendByDayStrip({ series, className }: SpendByDayStripProps) {
   const todayIndex = series.findIndex((s) => s.isToday)
   const firstDay = series[0]?.day ?? 1
   const lastDay = series[series.length - 1]?.day ?? 30
+  const daysInMonth = series.length
+
+  // Suppress edge numeric labels when today bar is too close and would overlap.
+  // Only relevant for real month lengths (≥10 days); short test series always show both.
+  // Suppress first-day label when today is within the first 3 bars of the strip,
+  // suppress last-day label when today is within the last 3 bars.
+  const isRealMonth = daysInMonth >= 10
+  const showFirstDayLabel =
+    !isRealMonth || todayIndex < 0 || todayIndex > 2
+  const showLastDayLabel =
+    !isRealMonth || todayIndex < 0 || todayIndex < daysInMonth - 3
 
   const ariaLabel = t('chartSummaryDays')
 
@@ -63,10 +74,12 @@ export function SpendByDayStrip({ series, className }: SpendByDayStripProps) {
 
       {/* Axis: first day | today (centered under its bar) | last day */}
       <div className="relative flex items-center text-[10px] text-muted-txt select-none" style={{ height: 16 }}>
-        {/* First day */}
-        <span className="absolute left-0">
-          {String(firstDay).padStart(2, '0')}
-        </span>
+        {/* First day — suppressed when today is within the first 3 days */}
+        {showFirstDayLabel && (
+          <span className="absolute left-0">
+            {String(firstDay).padStart(2, '0')}
+          </span>
+        )}
 
         {/* Today label — centered under the today bar */}
         {todayIndex >= 0 && series.length > 0 && (
@@ -81,10 +94,12 @@ export function SpendByDayStrip({ series, className }: SpendByDayStripProps) {
           </span>
         )}
 
-        {/* Last day */}
-        <span className="absolute right-0">
-          {String(lastDay).padStart(2, '0')}
-        </span>
+        {/* Last day — suppressed when today is within the last 3 days */}
+        {showLastDayLabel && (
+          <span className="absolute right-0">
+            {String(lastDay).padStart(2, '0')}
+          </span>
+        )}
       </div>
     </div>
   )

@@ -104,7 +104,7 @@ export default function AjustesPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            aria-label="Volver"
+            aria-label={tCommon('back')}
             className="flex items-center justify-center min-h-[40px] min-w-[40px] -ml-2 rounded-full text-muted-txt hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-condor-primary"
           >
             <ChevronLeft size={22} />
@@ -149,7 +149,11 @@ export default function AjustesPage() {
                 onValueChange={handleLocaleChange}
               >
                 <SelectTrigger className="h-8 border-outline bg-surface-2 text-text text-sm">
-                  <SelectValue />
+                  <SelectValue>
+                    {(v: string | null) =>
+                      localeOptions.find((o) => o.value === v)?.label ?? v
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {localeOptions.map((o) => (
@@ -181,7 +185,11 @@ export default function AjustesPage() {
                 onValueChange={handleDashboardViewChange}
               >
                 <SelectTrigger className="h-8 border-outline bg-surface-2 text-text text-sm">
-                  <SelectValue />
+                  <SelectValue>
+                    {(v: string | null) =>
+                      viewOptions.find((o) => o.value === v)?.label ?? v
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {viewOptions.map((o) => (

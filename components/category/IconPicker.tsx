@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { ICONS, ICON_KEYS } from '@/lib/domain/icons'
 
@@ -11,6 +12,7 @@ export interface IconPickerProps {
 }
 
 export function IconPicker({ value, onChange, className }: IconPickerProps) {
+  const t = useTranslations('Categorias')
   return (
     <div
       className={cn(
@@ -18,7 +20,7 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
         className,
       )}
       role="group"
-      aria-label="Select icon"
+      aria-label={t('selectIcon')}
     >
       {ICON_KEYS.map((key) => {
         const IconComponent = ICONS[key]

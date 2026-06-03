@@ -26,6 +26,7 @@ import { SpendByDayStrip } from '@/components/charts/SpendByDayStrip'
 
 export default function InicioPage() {
   const t = useTranslations('Inicio')
+  const tNav = useTranslations('Nav')
   const router = useRouter()
 
   const expenses = useCondorStore((s) => s.expenses)
@@ -67,14 +68,14 @@ export default function InicioPage() {
           <div className="flex items-center gap-1">
             <Link
               href="/categorias"
-              aria-label="Categorías"
+              aria-label={tNav('categories')}
               className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-full text-muted-txt hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-condor-primary"
             >
               <Tags size={20} strokeWidth={2} />
             </Link>
             <Link
               href="/ajustes"
-              aria-label="Ajustes"
+              aria-label={tNav('settings')}
               className="flex items-center justify-center min-h-[40px] min-w-[40px] rounded-full text-muted-txt hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-condor-primary"
             >
               <Settings size={20} strokeWidth={2} />

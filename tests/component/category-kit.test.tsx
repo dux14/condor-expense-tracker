@@ -1,10 +1,42 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { NextIntlClientProvider } from 'next-intl'
 import { CategoryChip } from '@/components/category/CategoryChip'
 import { ColorSwatchPicker } from '@/components/category/ColorSwatchPicker'
 import type { Category } from '@/lib/domain/types'
 import { CATEGORY_PALETTE } from '@/lib/domain/palette'
+
+const messages = {
+  Categorias: {
+    selectIcon: 'Seleccionar ícono',
+    colorSwatch: 'Color {hex}',
+    customColor: 'Color personalizado',
+    pickCustomColor: 'Elegir color personalizado',
+    title: 'Categorías',
+    title_new: 'Nueva categoría',
+    title_edit: 'Editar categoría',
+    name_label: 'Nombre',
+    name_placeholder: 'Ej. Gimnasio',
+    color_label: 'Color',
+    icon_label: 'Ícono',
+    save: 'Guardar',
+    presets: 'PREDETERMINADAS',
+    custom: 'PERSONALIZADAS',
+    newCategory: 'Nueva categoría',
+    palette: 'PALETA SUGERIDA',
+    reassignWarning: 'Reasignar',
+    deleteTitle: 'Eliminar categoría',
+  },
+}
+
+function withIntl(ui: React.ReactElement) {
+  return (
+    <NextIntlClientProvider locale="es" messages={messages}>
+      {ui}
+    </NextIntlClientProvider>
+  )
+}
 
 const mockCategory: Category = {
   id: 'cat-001',
@@ -63,10 +95,12 @@ describe('ColorSwatchPicker', () => {
   it('calls onChange with the hex when a palette swatch is clicked', async () => {
     const onChange = vi.fn()
     render(
-      <ColorSwatchPicker
-        value={CATEGORY_PALETTE[0]}
-        onChange={onChange}
-      />,
+      withIntl(
+        <ColorSwatchPicker
+          value={CATEGORY_PALETTE[0]}
+          onChange={onChange}
+        />,
+      ),
     )
 
     // Click the second palette swatch

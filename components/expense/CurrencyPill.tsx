@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { KNOWN_CURRENCIES } from '@/lib/domain/schemas'
 import type { Currency } from '@/lib/domain/types'
@@ -25,6 +26,7 @@ export function CurrencyPill({
   currencies = [...KNOWN_CURRENCIES],
   className,
 }: CurrencyPillProps) {
+  const t = useTranslations('Anadir')
   return (
     <Select
       value={value}
@@ -33,7 +35,7 @@ export function CurrencyPill({
       }}
     >
       <SelectTrigger
-        aria-label="Select currency"
+        aria-label={t('selectCurrency')}
         className={cn(
           // Pill shape
           'h-8 rounded-full border-0 px-3 py-0',
