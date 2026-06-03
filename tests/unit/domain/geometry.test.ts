@@ -141,6 +141,22 @@ describe('squarify', () => {
     // total area = 100*100
     expect(areaA + areaB).toBeCloseTo(10000, 0)
   })
+
+  it('mixed nonzero + trailing zero values produce no NaN rects', () => {
+    const rects = squarify([4, 0, 0], 100, 100)
+    expect(rects.length).toBe(3)
+    for (const r of rects) {
+      expect(Number.isNaN(r.w)).toBe(false)
+      expect(Number.isNaN(r.h)).toBe(false)
+      expect(Number.isNaN(r.x)).toBe(false)
+      expect(Number.isNaN(r.y)).toBe(false)
+    }
+    // zero-value items get zero area; the nonzero item fills the canvas
+    const byIndex = (i: number) => rects.find((r) => r.index === i)!
+    expect(byIndex(0).w * byIndex(0).h).toBeCloseTo(10000, 0)
+    expect(byIndex(1).w * byIndex(1).h).toBe(0)
+    expect(byIndex(2).w * byIndex(2).h).toBe(0)
+  })
 })
 
 // ---------------------------------------------------------------------------

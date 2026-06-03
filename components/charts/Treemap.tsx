@@ -112,7 +112,11 @@ export function Treemap({
             >
               <div
                 className="w-full h-full overflow-hidden"
-                style={{ backgroundColor: item.color }}
+                style={{
+                  backgroundColor: item.color,
+                  // 1px gap via outline trick — match the __rest__ cell separator
+                  outline: '1px solid var(--bg)',
+                }}
               >
                 {showLabel && (
                   <div className="flex flex-col p-1.5 h-full justify-end">

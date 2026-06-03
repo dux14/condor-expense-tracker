@@ -95,6 +95,13 @@ function _squarifyLayout(
   result: SquarifyRect[],
 ): void {
   if (items.length === 0) return
+  if (areaTotal <= 0) {
+    // Remaining items all have value 0 → zero-area rects (avoids 0*Infinity NaN).
+    for (const item of items) {
+      result.push({ x, y, w: 0, h: 0, index: item.index })
+    }
+    return
+  }
   if (items.length === 1) {
     result.push({ x, y, w, h, index: items[0].index })
     return
