@@ -21,7 +21,10 @@
   "Nav": {
     "home": "Home",
     "add": "Add",
-    "history": "History"
+    "history": "History",
+    "mainNav": "Main navigation",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month"
   },
   "Inicio": {
     "spentThisMonth": "Spent this month",

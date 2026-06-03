@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Expense, Category, Settings, ExportBundle } from './types';
+import type { Expense } from './types';
 
 export const KNOWN_CURRENCIES = [
   'COP',

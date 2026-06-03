@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { formatMonthLabel, prevMonthKey, nextMonthKey } from '@/lib/format/date'
 import type { Locale } from '@/lib/domain/types'
 import { cn } from '@/lib/utils'
@@ -13,6 +14,7 @@ interface MonthSwitcherProps {
 }
 
 export function MonthSwitcher({ value, onChange, locale, className }: MonthSwitcherProps) {
+  const t = useTranslations('Nav')
   return (
     <div
       className={cn(
@@ -23,7 +25,7 @@ export function MonthSwitcher({ value, onChange, locale, className }: MonthSwitc
       {/* Prev chevron */}
       <button
         type="button"
-        aria-label="Mes anterior"
+        aria-label={t('prevMonth')}
         onClick={() => onChange(prevMonthKey(value))}
         className={cn(
           'flex items-center justify-center rounded-full',
@@ -44,7 +46,7 @@ export function MonthSwitcher({ value, onChange, locale, className }: MonthSwitc
       {/* Next chevron */}
       <button
         type="button"
-        aria-label="Mes siguiente"
+        aria-label={t('nextMonth')}
         onClick={() => onChange(nextMonthKey(value))}
         className={cn(
           'flex items-center justify-center rounded-full',

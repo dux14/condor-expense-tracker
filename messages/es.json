@@ -21,7 +21,10 @@
   "Nav": {
     "home": "Inicio",
     "add": "Añadir",
-    "history": "Histórico"
+    "history": "Histórico",
+    "mainNav": "Navegación principal",
+    "prevMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente"
   },
   "Inicio": {
     "spentThisMonth": "Gastado este mes",

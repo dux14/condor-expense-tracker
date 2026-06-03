@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Expense, Category } from '@/lib/domain/types';
 import { PRESET_CATEGORIES, OTROS_ID } from '@/lib/domain/presets';
-import { daysInMonth, todayKey, todayMonthKey } from '@/lib/format/date';
+import { todayKey, todayMonthKey } from '@/lib/format/date';
 import {
   expensesInMonth,
   monthTotal,

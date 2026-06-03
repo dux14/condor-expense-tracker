@@ -16,7 +16,7 @@ export function BottomNav() {
 
   return (
     <nav
-      aria-label={t('home')}
+      aria-label={t('mainNav')}
       className={cn(
         'fixed bottom-0 left-0 right-0 z-50',
         'flex items-end justify-around',
@@ -43,7 +43,7 @@ export function BottomNav() {
 
       {/* Center FAB — raised above bar */}
       <div className="relative -top-5 flex flex-col items-center gap-1">
-        <AddFab />
+        <AddFab label={t('add')} />
         <span className="text-xs font-medium text-muted-txt mt-1">{t('add')}</span>
       </div>
 

@@ -4,13 +4,14 @@ import { cn } from '@/lib/utils'
 
 interface AddFabProps {
   className?: string
+  label?: string
 }
 
-export function AddFab({ className }: AddFabProps) {
+export function AddFab({ className, label }: AddFabProps) {
   return (
     <Link
       href="/anadir"
-      aria-label="Añadir gasto"
+      aria-label={label ?? 'Añadir gasto'}
       className={cn(
         'flex items-center justify-center',
         'h-14 w-14 rounded-full',
