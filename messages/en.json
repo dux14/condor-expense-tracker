@@ -47,5 +47,20 @@
     "empty": "No transactions this month.",
     "filteredBy": "Filtered by",
     "clearFilter": "Clear filter"
+  },
+  "Anadir": {
+    "titleAdd": "Add expense",
+    "titleEdit": "Edit expense",
+    "convertHint": "≈ converts to your base currency",
+    "category": "Category",
+    "merchant": "Merchant",
+    "merchantPh": "e.g. Store, Uber…",
+    "note": "Note",
+    "notePh": "Optional",
+    "saveExpense": "Save expense",
+    "newCategory": "New",
+    "futureWarning": "Future date",
+    "deleted": "Expense deleted",
+    "saveError": "Could not save"
   }
 }

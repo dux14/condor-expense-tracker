@@ -47,5 +47,20 @@
     "empty": "Sin transacciones este mes.",
     "filteredBy": "Filtrado por",
     "clearFilter": "Quitar filtro"
+  },
+  "Anadir": {
+    "titleAdd": "Añadir gasto",
+    "titleEdit": "Editar gasto",
+    "convertHint": "≈ se convierte a tu moneda base",
+    "category": "Categoría",
+    "merchant": "Comercio",
+    "merchantPh": "Ej. Éxito, Rappi…",
+    "note": "Nota",
+    "notePh": "Opcional",
+    "saveExpense": "Guardar gasto",
+    "newCategory": "Nueva",
+    "futureWarning": "Fecha futura",
+    "deleted": "Gasto eliminado",
+    "saveError": "No se pudo guardar"
   }
 }

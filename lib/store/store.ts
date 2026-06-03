@@ -271,7 +271,7 @@ export function createCondorStore(repo: Repository, fx: FxProvider) {
 
 const defaultRepo = new LocalStorageRepository();
 const defaultFx = new FrankfurterFxProvider();
-const defaultStore = createCondorStore(defaultRepo, defaultFx);
+export const defaultStore = createCondorStore(defaultRepo, defaultFx);
 
 export function useCondorStore(): CondorState;
 export function useCondorStore<U>(selector: (state: CondorState) => U): U;
