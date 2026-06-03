@@ -10,13 +10,20 @@
     "no_conversion": "no conversion"
   },
   "Categorias": {
+    "title": "Categories",
     "title_new": "New category",
     "title_edit": "Edit category",
     "name_label": "Name",
     "name_placeholder": "E.g. Gym",
     "color_label": "Color",
     "icon_label": "Icon",
-    "save": "Save"
+    "save": "Save",
+    "presets": "PRESETS",
+    "custom": "CUSTOM",
+    "newCategory": "New category",
+    "palette": "SUGGESTED PALETTE",
+    "reassignWarning": "Expenses in this category will be reassigned to Others.",
+    "deleteTitle": "Delete category"
   },
   "Nav": {
     "home": "Home",
@@ -47,6 +54,27 @@
     "empty": "No transactions this month.",
     "filteredBy": "Filtered by",
     "clearFilter": "Clear filter"
+  },
+  "Ajustes": {
+    "title": "Settings",
+    "preferences": "PREFERENCES",
+    "baseCurrency": "Base currency",
+    "language": "Language",
+    "theme": "Theme",
+    "themeDark": "Dark",
+    "themeLight": "Light",
+    "themeAuto": "Auto",
+    "homeView": "Home view",
+    "data": "DATA",
+    "exportData": "Export data",
+    "wipeAll": "Wipe all data",
+    "wipeConfirmTitle": "Delete all data?",
+    "wipeConfirmBody": "This will permanently delete all your expenses, custom categories, and settings. This cannot be undone.",
+    "about": "ABOUT",
+    "version": "v1.0 · Phase 1",
+    "localNote": "Your data is stored only on this device.",
+    "dataCleared": "Data cleared",
+    "updatingFx": "Updating conversions…"
   },
   "Anadir": {
     "titleAdd": "Add expense",

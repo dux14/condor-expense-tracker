@@ -12,6 +12,8 @@ export interface CategoryListItemProps {
   onPress?: () => void
   onEdit?: () => void
   trailing?: 'chevron' | 'edit' | 'none'
+  /** Optional custom action nodes rendered at the trailing edge, replacing the built-in trailing. */
+  actions?: React.ReactNode
   className?: string
 }
 
@@ -21,6 +23,7 @@ export function CategoryListItem({
   onPress,
   onEdit,
   trailing = 'chevron',
+  actions,
   className,
 }: CategoryListItemProps) {
   const content = (
@@ -41,22 +44,28 @@ export function CategoryListItem({
         )}
       </div>
 
-      {/* Trailing */}
-      {trailing === 'chevron' && (
-        <ChevronRight size={18} className="shrink-0 text-muted-txt" />
-      )}
-      {trailing === 'edit' && (
-        <button
-          type="button"
-          aria-label={`Edit ${category.name}`}
-          onClick={(e) => {
-            e.stopPropagation()
-            onEdit?.()
-          }}
-          className="rounded-full p-1.5 text-muted-txt transition-colors hover:bg-surface-2 hover:text-text"
-        >
-          <Pencil size={16} />
-        </button>
+      {/* Custom actions take priority over built-in trailing */}
+      {actions ? (
+        <div className="flex items-center gap-1 shrink-0">{actions}</div>
+      ) : (
+        <>
+          {trailing === 'chevron' && (
+            <ChevronRight size={18} className="shrink-0 text-muted-txt" />
+          )}
+          {trailing === 'edit' && (
+            <button
+              type="button"
+              aria-label={`Edit ${category.name}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit?.()
+              }}
+              className="rounded-full p-1.5 text-muted-txt transition-colors hover:bg-surface-2 hover:text-text"
+            >
+              <Pencil size={16} />
+            </button>
+          )}
+        </>
       )}
     </div>
   )

@@ -10,13 +10,20 @@
     "no_conversion": "sin conversión"
   },
   "Categorias": {
+    "title": "Categorías",
     "title_new": "Nueva categoría",
     "title_edit": "Editar categoría",
     "name_label": "Nombre",
     "name_placeholder": "Ej. Gimnasio",
     "color_label": "Color",
     "icon_label": "Ícono",
-    "save": "Guardar"
+    "save": "Guardar",
+    "presets": "PREDETERMINADAS",
+    "custom": "PERSONALIZADAS",
+    "newCategory": "Nueva categoría",
+    "palette": "PALETA SUGERIDA",
+    "reassignWarning": "Los gastos de esta categoría serán reasignados a Otros.",
+    "deleteTitle": "Eliminar categoría"
   },
   "Nav": {
     "home": "Inicio",
@@ -47,6 +54,27 @@
     "empty": "Sin transacciones este mes.",
     "filteredBy": "Filtrado por",
     "clearFilter": "Quitar filtro"
+  },
+  "Ajustes": {
+    "title": "Ajustes",
+    "preferences": "PREFERENCIAS",
+    "baseCurrency": "Moneda base",
+    "language": "Idioma",
+    "theme": "Tema",
+    "themeDark": "Oscuro",
+    "themeLight": "Claro",
+    "themeAuto": "Auto",
+    "homeView": "Vista de inicio",
+    "data": "DATOS",
+    "exportData": "Exportar datos",
+    "wipeAll": "Borrar todo",
+    "wipeConfirmTitle": "¿Borrar todos los datos?",
+    "wipeConfirmBody": "Esta acción eliminará todos tus gastos, categorías personalizadas y ajustes. No se puede deshacer.",
+    "about": "ACERCA DE",
+    "version": "v1.0 · Fase 1",
+    "localNote": "Tus datos se guardan solo en este dispositivo.",
+    "dataCleared": "Datos borrados",
+    "updatingFx": "Actualizando conversiones…"
   },
   "Anadir": {
     "titleAdd": "Añadir gasto",
