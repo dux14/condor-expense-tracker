@@ -36,6 +36,16 @@
     "chartSummaryBars": "Gráfica de barras: categorías de gasto",
     "chartSummaryDonut": "Dona: distribución de gasto por categoría",
     "chartSummaryTreemap": "Mapa de árbol: gasto por categoría",
-    "chartSummaryDays": "Gasto diario del mes"
+    "chartSummaryDays": "Gasto diario del mes",
+    "whenSpent": "¿Cuándo gastaste?",
+    "emptyTitle": "Sin gastos este mes",
+    "emptyBody": "Registra tu primer gasto y empieza a ver tus patrones de consumo.",
+    "addFirst": "Añadir gasto"
+  },
+  "Historico": {
+    "title": "Histórico",
+    "empty": "Sin transacciones este mes.",
+    "filteredBy": "Filtrado por",
+    "clearFilter": "Quitar filtro"
   }
 }

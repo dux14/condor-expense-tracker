@@ -36,6 +36,16 @@
     "chartSummaryBars": "Bar chart: spending categories",
     "chartSummaryDonut": "Donut: spending by category",
     "chartSummaryTreemap": "Treemap: spending by category",
-    "chartSummaryDays": "Daily spending for the month"
+    "chartSummaryDays": "Daily spending for the month",
+    "whenSpent": "When did you spend?",
+    "emptyTitle": "No expenses this month",
+    "emptyBody": "Log your first expense and start seeing your spending patterns.",
+    "addFirst": "Add expense"
+  },
+  "Historico": {
+    "title": "History",
+    "empty": "No transactions this month.",
+    "filteredBy": "Filtered by",
+    "clearFilter": "Clear filter"
   }
 }
