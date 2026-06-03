@@ -11,6 +11,8 @@ coverage
 test-results
 playwright-report
 .playwright
+.playwright-mcp
+condor-*.png
 
 # typescript
 *.tsbuildinfo
