@@ -36,6 +36,7 @@ export function SegmentedControl({
             type="button"
             role="radio"
             aria-checked={active}
+            data-testid={`segment-${opt.value}`}
             onClick={() => onChange(opt.value)}
             className={cn(
               'min-h-[36px] rounded-full px-4 py-1 text-sm font-medium transition-colors',

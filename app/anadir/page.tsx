@@ -304,6 +304,7 @@ function AnadirContent() {
         <div className="mt-8">
           <button
             type="button"
+            data-testid="save-expense"
             onClick={handleSave}
             disabled={!isValid || saving}
             className={cn(

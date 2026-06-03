@@ -39,6 +39,7 @@ export function AmountInput(props: AmountInputProps) {
       onChange={handleChange}
       autoFocus={autoFocus}
       aria-label={t('amountLabel')}
+      data-testid="amount-input"
       className={cn(
         // Full-width, transparent bg, no border of its own — parent supplies the surface
         'w-full min-w-0 bg-transparent text-right outline-none',

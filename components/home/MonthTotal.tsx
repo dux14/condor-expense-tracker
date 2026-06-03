@@ -37,7 +37,7 @@ export function MonthTotal({
 
       {/* Big money figure */}
       <div className="flex items-baseline gap-2">
-        <span className="font-money text-condor-primary" style={{ fontSize: '2.5rem', lineHeight: 1.1 }}>
+        <span data-testid="month-total" className="font-money text-condor-primary" style={{ fontSize: '2.5rem', lineHeight: 1.1 }}>
           {formatMoney(totalBase, baseCurrency, locale)}
         </span>
         <span className="text-xs font-medium text-muted-txt uppercase tracking-wide">

@@ -73,6 +73,7 @@ export function RankedBars({
           <li key={item.categoryId}>
             <button
               type="button"
+              data-testid={`ranked-bar-${item.categoryId}`}
               onClick={() => onSelect?.(item.categoryId)}
               className="w-full text-left py-2 px-0 rounded-condor focus-visible:outline focus-visible:outline-2 focus-visible:outline-condor-primary transition-opacity active:opacity-70"
               aria-label={`${item.name} ${amountStr} ${pctStr}`}

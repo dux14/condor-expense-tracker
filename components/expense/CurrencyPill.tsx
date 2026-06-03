@@ -36,6 +36,7 @@ export function CurrencyPill({
     >
       <SelectTrigger
         aria-label={t('selectCurrency')}
+        data-testid="currency-pill"
         className={cn(
           // Pill shape
           'h-8 rounded-full border-0 px-3 py-0',

@@ -215,6 +215,7 @@ export default function AjustesPage() {
             <SettingRow
               label={t('exportData')}
               onPress={handleExport}
+              data-testid="export-btn"
             >
               <Download size={18} className="text-muted-txt" />
             </SettingRow>
@@ -226,6 +227,7 @@ export default function AjustesPage() {
               label={t('wipeAll')}
               danger
               onPress={() => setWipeOpen(true)}
+              data-testid="wipe-btn"
             >
               <Trash2 size={18} className="text-danger" />
             </SettingRow>

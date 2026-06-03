@@ -83,6 +83,7 @@ export function TransactionRow({
     return (
       <button
         type="button"
+        data-testid={`transaction-row-${expense.id}`}
         onClick={onPress}
         className="w-full text-left transition-colors hover:bg-surface-2 active:bg-surface-3"
       >

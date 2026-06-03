@@ -7,6 +7,7 @@ interface SettingRowProps {
   onPress?: () => void
   danger?: boolean
   className?: string
+  'data-testid'?: string
 }
 
 export function SettingRow({
@@ -16,6 +17,7 @@ export function SettingRow({
   onPress,
   danger = false,
   className,
+  'data-testid': testId,
 }: SettingRowProps) {
   const Tag = onPress ? 'button' : 'div'
 
@@ -23,6 +25,7 @@ export function SettingRow({
     <Tag
       type={onPress ? 'button' : undefined}
       onClick={onPress}
+      data-testid={testId}
       className={cn(
         'flex w-full items-center justify-between gap-3',
         'min-h-[48px] px-4 py-3',
