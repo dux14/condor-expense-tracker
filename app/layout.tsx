@@ -15,7 +15,16 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: "Cóndor",
-  description: "Local-first expense tracker",
+  description: "Seguimiento de gastos local-first para LATAM",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Cóndor",
+  },
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {

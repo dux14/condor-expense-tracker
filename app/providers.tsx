@@ -6,6 +6,7 @@ import { useCondorStore } from '@/lib/store/store';
 import { resolveThemeClass } from '@/lib/theme';
 import { getMessages } from '@/lib/i18n/messages';
 import CondorLogo from '@/components/common/CondorLogo';
+import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { Toaster } from '@/components/ui/sonner';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -49,6 +50,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       ) : (
         children
       )}
+      <ServiceWorkerRegister />
       <Toaster theme="system" />
     </NextIntlClientProvider>
   );

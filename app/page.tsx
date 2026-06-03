@@ -58,7 +58,7 @@ export default function InicioPage() {
         <header className="flex items-center justify-between pt-5 pb-2">
           {/* Left: logo + wordmark */}
           <div className="flex items-center gap-2">
-            <CondorLogo size={28} />
+            <CondorLogo size={28} animate />
             <span className="font-heading text-lg font-semibold text-text">
               Cóndor
             </span>
