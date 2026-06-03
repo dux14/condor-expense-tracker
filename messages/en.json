@@ -1,0 +1,11 @@
+{
+  "Common": {
+    "appName": "Cóndor",
+    "tagline": "It sees everything from above.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "loading": "Loading…"
+  }
+}

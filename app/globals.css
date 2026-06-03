@@ -2,9 +2,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Tailwind v4: support class-based dark mode (.dark class on html/body) */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
+  /* ── shadcn tokens (keep so ui components work) ── */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
@@ -46,9 +48,37 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── Cóndor semantic tokens → Tailwind utility classes ── */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-text: var(--text);
+  --color-muted-txt: var(--muted-txt);
+  --color-outline: var(--outline);
+  --color-condor-primary: var(--condor-primary);
+  --color-on-primary: var(--on-primary);
+  --color-danger: var(--danger);
+  --color-cat-lavender: var(--cat-lavender);
+  --color-cat-pink: var(--cat-pink);
+  --color-cat-amber: var(--cat-amber);
+  --color-cat-sky: var(--cat-sky);
+  --color-cat-mint: var(--cat-mint);
+
+  /* ── Condor radius token ── */
+  --radius-condor: 12px;
+
+  /* ── Soft shadow tokens ── */
+  --shadow-soft: 0 4px 24px 0 rgb(0 0 0 / 0.18), 0 1px 4px 0 rgb(0 0 0 / 0.10);
+  --shadow-soft-sm: 0 2px 12px 0 rgb(0 0 0 / 0.12);
 }
 
+/* ────────────────────────────────────────────
+   LIGHT mode — :root baseline
+   ──────────────────────────────────────────── */
 :root {
+  /* shadcn originals */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -81,9 +111,30 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Cóndor LIGHT palette */
+  --bg: #FAFAF7;
+  --surface: #FFFFFF;
+  --surface-2: #F1F1EC;
+  --surface-3: #E8E8E2;
+  --text: #1A1F2B;
+  --muted-txt: #5A6470;
+  --outline: #D8D8D2;
+  --condor-primary: #7EE8C9;
+  --on-primary: #0C2A22;
+  --danger: #E5484D;
+  --cat-lavender: #C9B6FF;
+  --cat-pink: #FF9EB1;
+  --cat-amber: #FFD98A;
+  --cat-sky: #9EC1FF;
+  --cat-mint: #7EE8C9;
 }
 
+/* ────────────────────────────────────────────
+   DARK mode — .dark class on <html>
+   ──────────────────────────────────────────── */
 .dark {
+  /* shadcn dark overrides */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -112,19 +163,97 @@
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Cóndor DARK palette */
+  --bg: #0E131F;
+  --surface: #1A1F2B;
+  --surface-2: #212736;
+  --surface-3: #252C3D;
+  --text: #EAF0F2;
+  --muted-txt: #9AA6B2;
+  --outline: #333B4D;
+  --condor-primary: #7EE8C9;
+  --on-primary: #0C2A22;
+  --danger: #FFB4AB;
+  --cat-lavender: #C9B6FF;
+  --cat-pink: #FF9EB1;
+  --cat-amber: #FFD98A;
+  --cat-sky: #9EC1FF;
+  --cat-mint: #7EE8C9;
 }
 
+/* ────────────────────────────────────────────
+   Base layer
+   ──────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-bg text-text;
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* ────────────────────────────────────────────
+   Utility layer
+   ──────────────────────────────────────────── */
+@layer utilities {
+  /* Space Grotesk + tabular figures for headings */
+  .font-heading {
+    font-family: var(--font-space-grotesk);
+    font-feature-settings: 'tnum';
+    letter-spacing: -0.01em;
+  }
+  /* Alias for monetary values */
+  .font-money {
+    font-family: var(--font-space-grotesk);
+    font-feature-settings: 'tnum';
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  /* Soft diffused shadow utilities */
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  .shadow-soft-sm {
+    box-shadow: var(--shadow-soft-sm);
+  }
+}
+
+/* ────────────────────────────────────────────
+   CondorLogo animation keyframes
+   ──────────────────────────────────────────── */
+@keyframes condor-ping {
+  0%   { transform: scale(1);    opacity: 0.7; }
+  70%  { transform: scale(1.18); opacity: 0.15; }
+  100% { transform: scale(1.18); opacity: 0; }
+}
+
+@keyframes condor-wing {
+  0%, 100% { transform: scaleY(1); }
+  50%       { transform: scaleY(0.93); }
+}
+
+.condor-ring-ping {
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.condor-wings {
+  transform-origin: center bottom;
+  transform-box: fill-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .condor-animate .condor-ring-ping {
+    animation: condor-ping 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .condor-animate .condor-wings {
+    animation: condor-wing 3.2s ease-in-out infinite;
   }
 }
