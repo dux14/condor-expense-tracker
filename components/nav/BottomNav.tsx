@@ -19,13 +19,15 @@ export function BottomNav() {
       aria-label={t('mainNav')}
       className={cn(
         'fixed bottom-0 left-0 right-0 z-50',
-        'flex items-end justify-around',
         'bg-surface/90 backdrop-blur-md',
         'border-t border-outline',
         'pb-[env(safe-area-inset-bottom)]',
         'px-4 pt-2',
       )}
     >
+      {/* Inner rail capped to the content column so tabs don't scatter to the
+          screen edges on desktop viewports. */}
+      <div className="mx-auto flex w-full max-w-[480px] items-end justify-around">
       {/* Inicio */}
       <Link
         href="/"
@@ -61,6 +63,7 @@ export function BottomNav() {
         <History size={22} strokeWidth={isHistory ? 2.5 : 2} />
         <span>{t('history')}</span>
       </Link>
+      </div>
     </nav>
   )
 }

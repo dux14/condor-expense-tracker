@@ -73,4 +73,59 @@ describe('AmountInput', () => {
     const lastParsed = calls[calls.length - 1][0]
     expect(lastParsed).toBe(1234.56)
   })
+
+  it('shows live thousands separators while typing plain digits (es)', async () => {
+    const onAmountChange = vi.fn()
+    render(
+      withIntl(
+        <AmountInput
+          locale="es"
+          currencyCode="COP"
+          onAmountChange={onAmountChange}
+        />,
+      ),
+    )
+
+    const input = screen.getByRole('textbox', { name: /monto/i })
+    await userEvent.type(input, '1450000')
+
+    expect((input as HTMLInputElement).value).toBe('1.450.000')
+    const calls = onAmountChange.mock.calls
+    expect(calls[calls.length - 1][0]).toBe(1450000)
+  })
+
+  it('shows live thousands separators while typing plain digits (en)', async () => {
+    const onAmountChange = vi.fn()
+    render(
+      withIntl(
+        <AmountInput
+          locale="en"
+          currencyCode="USD"
+          onAmountChange={onAmountChange}
+        />,
+        'en',
+      ),
+    )
+
+    const input = screen.getByRole('textbox', { name: /amount/i })
+    await userEvent.type(input, '1450000')
+
+    expect((input as HTMLInputElement).value).toBe('1,450,000')
+  })
+
+  it('formats a pre-filled edit-mode value on mount', () => {
+    render(
+      withIntl(
+        <AmountInput
+          locale="es"
+          currencyCode="COP"
+          initialText="1450000"
+          onAmountChange={vi.fn()}
+        />,
+      ),
+    )
+
+    const input = screen.getByRole('textbox', { name: /monto/i })
+    expect((input as HTMLInputElement).value).toBe('1.450.000')
+  })
 })

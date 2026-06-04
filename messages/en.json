@@ -97,6 +97,7 @@
     "saveExpense": "Save expense",
     "newCategory": "New",
     "futureWarning": "Future date",
+    "timeTapToChange": "Time: {label}. Tap to change.",
     "deleted": "Expense deleted",
     "saveError": "Could not save",
     "selectCurrency": "Select currency",

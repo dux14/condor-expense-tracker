@@ -31,12 +31,12 @@ export function CategoryChip({
         'bg-surface-2 text-text',
         // Typography
         'text-xs font-medium',
-        // Transition
-        'transition-all duration-150',
-        // Selected state: mint ring + slight elevation
+        // Transition + tactile press feedback
+        'transition-all duration-150 active:scale-95',
+        // Selected state: mint ring + tint + elevation (must read in both themes)
         selected
-          ? 'ring-2 ring-condor-primary shadow-soft-sm'
-          : 'ring-0',
+          ? 'ring-2 ring-condor-primary bg-condor-primary/10 shadow-soft-sm'
+          : 'ring-0 hover:bg-surface-3',
         className,
       )}
     >

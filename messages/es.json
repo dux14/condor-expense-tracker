@@ -97,6 +97,7 @@
     "saveExpense": "Guardar gasto",
     "newCategory": "Nueva",
     "futureWarning": "Fecha futura",
+    "timeTapToChange": "Hora: {label}. Toca para cambiar.",
     "deleted": "Gasto eliminado",
     "saveError": "No se pudo guardar",
     "selectCurrency": "Seleccionar moneda",

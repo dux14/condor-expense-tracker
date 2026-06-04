@@ -12,7 +12,7 @@ test-results
 playwright-report
 .playwright
 .playwright-mcp
-condor-*.png
+/condor-*.png
 
 # typescript
 *.tsbuildinfo
@@ -26,3 +26,6 @@ condor-*.png
 
 # vercel
 .vercel
+
+# superpowers visual companion sessions
+.superpowers/

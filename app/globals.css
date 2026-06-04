@@ -196,6 +196,10 @@
   }
   body {
     @apply bg-bg text-text;
+    /* Containment guard: no layout element may pan the page horizontally.
+       `clip` (unlike `hidden`) does not create a scroll container, so
+       position: sticky descendants keep working. */
+    overflow-x: clip;
   }
   html {
     @apply font-sans;
@@ -219,44 +223,23 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
   }
-  /* Soft diffused shadow utilities */
-  .shadow-soft {
-    box-shadow: var(--shadow-soft);
-  }
-  .shadow-soft-sm {
-    box-shadow: var(--shadow-soft-sm);
-  }
+  /* NOTE: shadow-soft / shadow-soft-sm utilities are generated natively by
+     Tailwind v4 from the --shadow-* tokens in @theme. Do not redefine them
+     here — manual box-shadow overrides Tailwind's composed stack and breaks
+     ring-* utilities on the same element. */
 }
 
 /* ────────────────────────────────────────────
    CondorLogo animation keyframes
    ──────────────────────────────────────────── */
-@keyframes condor-ping {
-  0%   { transform: scale(1);    opacity: 0.7; }
-  70%  { transform: scale(1.18); opacity: 0.15; }
-  100% { transform: scale(1.18); opacity: 0; }
-}
-
-@keyframes condor-wing {
-  0%, 100% { transform: scaleY(1); }
-  50%       { transform: scaleY(0.93); }
-}
-
-.condor-ring-ping {
-  transform-origin: center;
-  transform-box: fill-box;
-}
-.condor-wings {
-  transform-origin: center bottom;
-  transform-box: fill-box;
+@keyframes condor-soar {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-4%) scale(1.02); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .condor-animate .condor-ring-ping {
-    animation: condor-ping 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  .condor-animate .condor-wings {
-    animation: condor-wing 3.2s ease-in-out infinite;
+  .condor-animate {
+    animation: condor-soar 3.2s ease-in-out infinite;
   }
 }
 

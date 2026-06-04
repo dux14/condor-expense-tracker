@@ -12,6 +12,7 @@ export interface Expense {
   baseAmount: number | null; // derived: amount * fxRate; null if FX unavailable
   fxRate: number | null;    // rate currency→baseCurrency on `date`; 1 if equal; null if unknown
   date: string;             // 'yyyy-MM-dd' (local calendar day)
+  time?: string;            // 'HH:mm' local time of the expense (optional, additive)
   categoryId: string;
   merchant?: string;
   note?: string;

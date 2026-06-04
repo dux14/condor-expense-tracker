@@ -121,6 +121,23 @@ export default function CategoriasPage() {
                   onPress={() =>
                     router.push('/historico?cat=' + cat.id + '&m=' + month)
                   }
+                  actions={
+                    <button
+                      type="button"
+                      aria-label={tCommon('editNamed', { name: cat.name })}
+                      onClick={() =>
+                        openEdit({
+                          id: cat.id,
+                          name: cat.name,
+                          color: cat.color,
+                          icon: cat.icon,
+                        })
+                      }
+                      className="rounded-full p-2 text-muted-txt transition-colors hover:bg-surface-2 hover:text-text"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  }
                 />
               </div>
             ))}

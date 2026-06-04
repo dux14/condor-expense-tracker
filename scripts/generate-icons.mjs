@@ -1,6 +1,15 @@
 /**
  * scripts/generate-icons.mjs
- * Generates Cóndor PWA icons from an inline SVG of the condor mark.
+ * Generates all Cóndor brand assets from the master mark
+ * (scripts/assets/condor-mark-master.png — "Moneda Cóndor", Higgsfield 2048×2048).
+ *
+ * The master is a mint coin with the condor carved in negative space on an ink
+ * background. Every pixel is normalized to the exact brand tokens (the AI master
+ * drifts slightly), producing two 2048px sources:
+ *   - tile: opaque, ink background  → app icons, apple icon, maskable
+ *   - coin: transparent background AND transparent condor cutout (true negative
+ *           space) → favicon, in-app logo on any theme
+ *
  * Uses sharp. Run with: node scripts/generate-icons.mjs
  */
 
@@ -10,110 +19,65 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const MASTER = join(__dirname, 'assets', 'condor-mark-master.png');
 const OUT_DIR = join(__dirname, '..', 'public', 'icons');
+const BRAND_DIR = join(__dirname, '..', 'public', 'brand');
 const APP_DIR = join(__dirname, '..', 'app');
 mkdirSync(OUT_DIR, { recursive: true });
+mkdirSync(BRAND_DIR, { recursive: true });
+
+// Brand tokens — keep in sync with app/globals.css (--condor-primary / --bg);
+// a color tweak there won't propagate to generated icons unless mirrored here.
+const MINT = { r: 0x4e, g: 0xcd, b: 0xaa }; // #4ECDAA → --condor-primary
+const INK = { r: 0x0e, g: 0x13, b: 0x1f }; // #0E131F → --bg (dark)
+
+// Coin geometry in the 2048px master (measured): centre ≈ 1024, diameter ≈ 1365
+const MASTER_SIZE = 2048;
+const COIN_DIAMETER = 1365;
 
 /**
- * Build a standalone SVG with the condor mark:
- * - Ink (#0E131F) rounded-rect background
- * - Mint (#4ECDAA) condor silhouette + radar ring
- * @param {number} size   total canvas size in px
- * @param {number} padding  inset from edge (for maskable safe-zone)
+ * Read the master once and build the two normalized 2048px sources.
+ * Mintness t of a pixel is derived from its green-dominance (ink: g-r≈7,
+ * mint: g-r≈117) so antialiased edges keep a smooth blend.
  */
-function buildSVG(size, padding = 0) {
-  const inner = size - 2 * padding;
-  const r = inner * 0.22; // corner radius for the tile, ~22% of inner size
-
-  // We draw the tile centred inside the canvas using a transform translate
-  const tileX = padding;
-  const tileY = padding;
-
-  // The condor viewbox is 100×100 so we scale to inner size
-  const scale = inner / 100;
-
-  return `<svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="${size}"
-  height="${size}"
-  viewBox="0 0 ${size} ${size}"
->
-  <!-- Ink background tile -->
-  <rect
-    x="${tileX}"
-    y="${tileY}"
-    width="${inner}"
-    height="${inner}"
-    rx="${r}"
-    ry="${r}"
-    fill="#0E131F"
-  />
-
-  <!-- Condor mark: scaled & positioned inside the tile -->
-  <g transform="translate(${tileX}, ${tileY}) scale(${scale})">
-
-    <!-- Dashed radar ring -->
-    <circle
-      cx="50" cy="50" r="44"
-      fill="none"
-      stroke="#4ECDAA"
-      stroke-width="1.8"
-      stroke-dasharray="5 4"
-      stroke-linecap="round"
-    />
-
-    <!-- Condor silhouette (filled, mint) -->
-    <g fill="#4ECDAA">
-      <!-- Body -->
-      <ellipse cx="50" cy="54" rx="7" ry="9"/>
-      <!-- Head -->
-      <ellipse cx="45" cy="43" rx="4.5" ry="4"/>
-      <!-- Beak -->
-      <ellipse cx="40" cy="43.5" rx="3.5" ry="1.5"/>
-
-      <!-- Left wing membrane -->
-      <path d="M 43 50 C 30 46, 18 42, 10 36 C 14 44, 22 52, 34 55 Z"/>
-      <!-- Left primary feathers -->
-      <path d="M 10 36 C  8 32,  6 29,  8 25 C 11 30, 12 34, 14 38 Z"/>
-      <path d="M 14 33 C 12 28, 12 24, 15 20 C 17 26, 17 30, 18 34 Z"/>
-      <path d="M 18 31 C 17 26, 18 22, 22 19 C 23 25, 22 29, 22 33 Z"/>
-      <path d="M 22 30 C 22 25, 24 21, 28 19 C 28 25, 27 29, 27 32 Z"/>
-      <path d="M 27 30 C 27 25, 30 22, 34 21 C 33 27, 31 30, 32 33 Z"/>
-
-      <!-- Right wing membrane -->
-      <path d="M 57 50 C 70 46, 82 42, 90 36 C 86 44, 78 52, 66 55 Z"/>
-      <!-- Right primary feathers -->
-      <path d="M 90 36 C 92 32, 94 29, 92 25 C 89 30, 88 34, 86 38 Z"/>
-      <path d="M 86 33 C 88 28, 88 24, 85 20 C 83 26, 83 30, 82 34 Z"/>
-      <path d="M 82 31 C 83 26, 82 22, 78 19 C 77 25, 78 29, 78 33 Z"/>
-      <path d="M 78 30 C 78 25, 76 21, 72 19 C 72 25, 73 29, 73 32 Z"/>
-      <path d="M 73 30 C 73 25, 70 22, 66 21 C 67 27, 69 30, 68 33 Z"/>
-
-      <!-- Tail -->
-      <path d="M 46 63 C 45 68, 44 72, 46 75 C 48 72, 52 72, 54 75 C 56 72, 55 68, 54 63 Z"/>
-    </g>
-  </g>
-</svg>`;
+async function buildSources() {
+  const { data, info } = await sharp(MASTER)
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const n = info.width * info.height;
+  const tile = Buffer.alloc(n * 3);
+  const coin = Buffer.alloc(n * 4);
+  for (let i = 0; i < n; i++) {
+    const s = i * info.channels;
+    const gd = data[s + 1] - data[s]; // green-dominance
+    const t = Math.min(1, Math.max(0, (gd - 7) / 110));
+    tile[i * 3] = Math.round(INK.r + (MINT.r - INK.r) * t);
+    tile[i * 3 + 1] = Math.round(INK.g + (MINT.g - INK.g) * t);
+    tile[i * 3 + 2] = Math.round(INK.b + (MINT.b - INK.b) * t);
+    coin[i * 4] = MINT.r;
+    coin[i * 4 + 1] = MINT.g;
+    coin[i * 4 + 2] = MINT.b;
+    coin[i * 4 + 3] = Math.round(255 * t);
+  }
+  const raw = (buf, channels) =>
+    sharp(buf, { raw: { width: info.width, height: info.height, channels } });
+  return {
+    tile: await raw(tile, 3).png().toBuffer(),
+    coin: await raw(coin, 4).png().toBuffer(),
+  };
 }
 
-async function generate(filename, size, padding) {
-  const svg = buildSVG(size, padding);
-  const svgBuffer = Buffer.from(svg, 'utf8');
-  const outPath = join(OUT_DIR, filename);
-  await sharp(svgBuffer).png().toFile(outPath);
-  console.log(`  generated ${outPath} (${size}x${size}, padding=${padding})`);
-}
-
-/** Render the condor tile to a PNG buffer at an exact size. */
-async function pngBuffer(size) {
-  const svgBuffer = Buffer.from(buildSVG(size, 0), 'utf8');
-  return sharp(svgBuffer).resize(size, size).png().toBuffer();
-}
-
-/** Write a PNG of the condor tile to an absolute path. */
-async function writePng(absPath, size) {
-  writeFileSync(absPath, await pngBuffer(size));
-  console.log(`  generated ${absPath} (${size}x${size})`);
+/** Crop a centred square so the coin occupies `coinRatio` of the side, then resize. */
+function renderMark(srcPng, size, coinRatio) {
+  const side = Math.min(MASTER_SIZE, Math.round(COIN_DIAMETER / coinRatio));
+  const off = Math.round((MASTER_SIZE - side) / 2);
+  return sharp(srcPng)
+    .extract({ left: off, top: off, width: side, height: side })
+    .resize(size, size)
+    // The mark is two flat colours — palette quantization shrinks the file
+    // dramatically with no visible loss.
+    .png({ palette: true, compressionLevel: 9 })
+    .toBuffer();
 }
 
 /** Pack multiple PNG buffers into a valid multi-size .ico (PNG-encoded entries). */
@@ -142,21 +106,36 @@ function buildIco(images) {
   return Buffer.concat([header, dir, ...datas]);
 }
 
-console.log('Generating Cóndor PWA icons…');
-await generate('icon-192.png', 192, 0);
-await generate('icon-512.png', 512, 0);
-// Maskable: ~12% safe-zone padding on each side (12% of 512 = ~61px)
-await generate('icon-maskable-512.png', 512, 62);
+async function write(absPath, buf, label) {
+  writeFileSync(absPath, buf);
+  console.log(`  generated ${absPath}${label ? ` (${label})` : ''}`);
+}
 
-console.log('Generating favicon + app icons…');
-// Modern favicon (Next App Router auto-links app/icon.png) + apple touch icon
-await writePng(join(APP_DIR, 'icon.png'), 256);
-await writePng(join(APP_DIR, 'apple-icon.png'), 180);
-// Legacy / scraper favicon.ico (multi-size: 16, 32, 48) — replaces the default
+console.log('Generating Cóndor brand assets from master…');
+const { tile, coin } = await buildSources();
+
+// PWA icons — opaque ink tiles, coin at 78% for strong presence
+await write(join(OUT_DIR, 'icon-192.png'), await renderMark(tile, 192, 0.78), '192x192');
+await write(join(OUT_DIR, 'icon-512.png'), await renderMark(tile, 512, 0.78), '512x512');
+// Maskable — coin at 70% so it clears the 80% safe-zone circle on any mask
+await write(
+  join(OUT_DIR, 'icon-maskable-512.png'),
+  await renderMark(tile, 512, 0.7),
+  '512x512 maskable',
+);
+
+// In-app logo — transparent coin (negative-space condor shows the page
+// background). 512px covers the largest in-app render (120px @3x).
+await write(join(BRAND_DIR, 'condor-mark.png'), await renderMark(coin, 512, 0.96), '512x512 transparent');
+
+// Next.js file-convention icons
+await write(join(APP_DIR, 'icon.png'), await renderMark(coin, 256, 0.96), '256x256 transparent');
+await write(join(APP_DIR, 'apple-icon.png'), await renderMark(tile, 180, 0.78), '180x180 opaque');
+
+// Legacy / scraper favicon.ico — transparent coin, near-full-bleed for 16px legibility
 const icoSizes = [16, 32, 48];
 const icoImages = await Promise.all(
-  icoSizes.map(async (size) => ({ size, buf: await pngBuffer(size) })),
+  icoSizes.map(async (size) => ({ size, buf: await renderMark(coin, size, 0.96) })),
 );
-writeFileSync(join(APP_DIR, 'favicon.ico'), buildIco(icoImages));
-console.log(`  generated ${join(APP_DIR, 'favicon.ico')} (16/32/48)`);
+await write(join(APP_DIR, 'favicon.ico'), buildIco(icoImages), '16/32/48');
 console.log('Done.');

@@ -49,13 +49,14 @@ export interface CondorState {
     amount: number;
     currency: string;
     date: string;
+    time?: string;
     categoryId: string;
     merchant?: string;
     note?: string;
   }): Promise<void>;
   updateExpense(
     id: string,
-    patch: Partial<Pick<Expense, 'amount' | 'currency' | 'date' | 'categoryId' | 'merchant' | 'note'>>,
+    patch: Partial<Pick<Expense, 'amount' | 'currency' | 'date' | 'time' | 'categoryId' | 'merchant' | 'note'>>,
   ): Promise<void>;
   deleteExpense(id: string): Promise<void>;
   addCategory(input: { name: string; color: string; icon: string }): Promise<void>;
@@ -136,6 +137,7 @@ export function createCondorStore(repo: Repository, fx: FxProvider) {
         baseAmount,
         fxRate,
         date: input.date,
+        time: input.time,
         categoryId: input.categoryId,
         merchant: input.merchant,
         note: input.note,

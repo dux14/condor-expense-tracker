@@ -28,13 +28,19 @@ export function TransactionRow({
 
   // Primary label: merchant > note > category name
   const primaryLabel = expense.merchant || expense.note || category.name
-  // Secondary label (shown when merchant is present): note or category name
-  const secondaryLabel =
+  // Secondary label (shown when merchant is present): note or category name,
+  // prefixed with the expense time when recorded.
+  const secondaryBase =
     expense.merchant
       ? (expense.note || category.name)
       : category.name !== primaryLabel
         ? category.name
         : undefined
+  const secondaryLabel = expense.time
+    ? secondaryBase
+      ? `${expense.time} · ${secondaryBase}`
+      : expense.time
+    : secondaryBase
 
   const showBaseAmount =
     expense.currency !== baseCurrency && expense.baseAmount != null
