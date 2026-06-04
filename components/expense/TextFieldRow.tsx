@@ -25,8 +25,10 @@ export function TextFieldRow({
   className,
 }: TextFieldRowProps) {
   const fieldClasses = cn(
-    // Override shadcn defaults for Cóndor surface
-    'border-0 bg-transparent px-0 py-0 text-sm text-text',
+    // Override shadcn defaults for Cóndor surface.
+    // text-base on mobile is mandatory: iOS auto-zooms on focus when an
+    // input's font-size is below 16px.
+    'border-0 bg-transparent px-0 py-0 text-base md:text-sm text-text',
     'placeholder:text-muted-txt',
     // Remove the default shadcn ring/border since the wrapper provides it
     'focus-visible:ring-0 focus-visible:border-0 outline-none',

@@ -22,6 +22,7 @@ export const isKnownCurrency = (c: string): c is KnownCurrency =>
   (KNOWN_CURRENCIES as readonly string[]).includes(c);
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export const expenseSchema = z.object({
   id: z.string(),
@@ -30,6 +31,7 @@ export const expenseSchema = z.object({
   baseAmount: z.number().nullable(),
   fxRate: z.number().nullable(),
   date: z.string().regex(DATE_REGEX),
+  time: z.string().regex(TIME_REGEX).optional(),
   categoryId: z.string(),
   merchant: z.string().optional(),
   note: z.string().optional(),

@@ -1,6 +1,6 @@
 // Cóndor — hand-rolled service worker
 // Versioned cache name: bump CACHE_VER to force re-install.
-const CACHE_VER = 'condor-v1';
+const CACHE_VER = 'condor-v2';
 
 const APP_SHELL = [
   '/',
@@ -9,6 +9,7 @@ const APP_SHELL = [
   '/ajustes',
   '/historico',
   '/manifest.webmanifest',
+  '/brand/condor-mark.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',

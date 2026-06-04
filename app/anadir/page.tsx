@@ -12,6 +12,7 @@ import { useCondorStore, defaultStore } from '@/lib/store/store'
 import { AmountInput } from '@/components/expense/AmountInput'
 import { CurrencyPill } from '@/components/expense/CurrencyPill'
 import { DatePickerRow } from '@/components/expense/DatePickerRow'
+import { TimePickerRow } from '@/components/expense/TimePickerRow'
 import { TextFieldRow } from '@/components/expense/TextFieldRow'
 import { CategoryChip } from '@/components/category/CategoryChip'
 import { NewCategorySheet } from '@/components/category/NewCategorySheet'
@@ -59,6 +60,11 @@ function AnadirContent() {
   const [date, setDate] = React.useState<string>(
     isEditMode && editingExpense ? editingExpense.date : todayKey(),
   )
+  const [time, setTime] = React.useState<string>(() => {
+    if (isEditMode && editingExpense) return editingExpense.time ?? ''
+    // Default to the current local time when adding
+    return new Date().toTimeString().slice(0, 5)
+  })
   const [categoryId, setCategoryId] = React.useState<string>(
     isEditMode && editingExpense ? editingExpense.categoryId : '',
   )
@@ -109,6 +115,7 @@ function AnadirContent() {
           amount: amountValue,
           currency,
           date,
+          time: time || undefined,
           categoryId,
           merchant: merchant.trim() || undefined,
           note: note.trim() || undefined,
@@ -119,6 +126,7 @@ function AnadirContent() {
           amount: amountValue,
           currency,
           date,
+          time: time || undefined,
           categoryId,
           merchant: merchant.trim() || undefined,
           note: note.trim() || undefined,
@@ -229,9 +237,10 @@ function AnadirContent() {
           )}
         </div>
 
-        {/* ── Date ─────────────────────────────────────────────────────── */}
-        <div className="mb-1">
-          <DatePickerRow value={date} onChange={setDate} locale={locale} />
+        {/* ── Date + time ──────────────────────────────────────────────── */}
+        <div className="mb-1 flex gap-2">
+          <DatePickerRow value={date} onChange={setDate} locale={locale} className="min-w-0 flex-1" />
+          <TimePickerRow value={time} onChange={setTime} className="w-[124px] shrink-0" />
         </div>
 
         {/* Future date warning */}
@@ -246,8 +255,9 @@ function AnadirContent() {
           <span className="mb-2 block text-xs font-medium text-muted-txt">
             {t('category')}
           </span>
-          {/* Horizontally scrollable chip row */}
-          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* Horizontally scrollable chip row on touch; wraps on desktop where
+              a hidden scrollbar gives no affordance to mouse users */}
+          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex-wrap md:overflow-x-visible">
             {visibleCategories.map((cat) => (
               <CategoryChip
                 key={cat.id}

@@ -5,7 +5,7 @@ import { format, parseISO } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
 import { useTranslations } from 'next-intl'
 import { CalendarIcon, ChevronRightIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, openNativePicker } from '@/lib/utils'
 import { todayKey } from '@/lib/format/date'
 import type { Locale } from '@/lib/domain/types'
 
@@ -44,14 +44,7 @@ export function DatePickerRow({
   const label = isToday ? `${todayPrefix}${formattedDate}` : formattedDate
 
   function handleRowClick() {
-    if (inputRef.current) {
-      // showPicker is available in modern browsers; falls back to click
-      if (typeof inputRef.current.showPicker === 'function') {
-        inputRef.current.showPicker()
-      } else {
-        inputRef.current.click()
-      }
-    }
+    openNativePicker(inputRef.current)
   }
 
   function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -97,7 +90,8 @@ export function DatePickerRow({
         onChange={handleDateChange}
         tabIndex={-1}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
+        // text-base: ≥16px so iOS Safari doesn't auto-zoom when showPicker() focuses it
+        className="pointer-events-none absolute inset-0 h-full w-full text-base opacity-0"
       />
     </div>
   )
