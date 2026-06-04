@@ -43,7 +43,9 @@ export default function RootLayout({
       lang="es"
       className={`dark ${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-dvh bg-bg text-text">
+      {/* pt: keep content clear of the iOS status bar / notch — viewport-fit=cover
+          extends the page under it (black-translucent standalone mode). */}
+      <body className="min-h-dvh bg-bg text-text pt-[env(safe-area-inset-top)]">
         <Providers>{children}</Providers>
       </body>
     </html>

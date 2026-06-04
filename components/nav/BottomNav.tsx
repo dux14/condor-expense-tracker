@@ -43,8 +43,10 @@ export function BottomNav() {
         <span>{t('home')}</span>
       </Link>
 
-      {/* Center FAB — raised above bar */}
-      <div className="relative -top-5 flex flex-col items-center gap-1">
+      {/* Center FAB — raised above bar. Negative margin (instead of a visual
+          -top offset) shrinks the box the column reserves in the rail, so the
+          bar stays as short as the side tabs instead of ~36px taller. */}
+      <div className="-mt-9 flex flex-col items-center gap-1">
         <AddFab label={t('add')} />
         <span className="text-xs font-medium text-muted-txt mt-1">{t('add')}</span>
       </div>

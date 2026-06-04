@@ -96,7 +96,7 @@ export default function AjustesPage() {
   ]
 
   return (
-    <main className="min-h-dvh bg-bg pb-28">
+    <main className="min-h-dvh bg-bg pb-[calc(env(safe-area-inset-bottom)+5.5rem)]">
       <div className="mx-auto max-w-[480px] px-5">
 
         {/* ── Top bar ───────────────────────────────────────────────── */}

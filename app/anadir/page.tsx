@@ -153,7 +153,7 @@ function AnadirContent() {
   // ── Render ─────────────────────────────────────────────────────────────
   return (
     <main className="min-h-dvh bg-bg">
-      <div className="mx-auto flex max-w-[480px] flex-col px-4 pb-8">
+      <div className="mx-auto flex max-w-[480px] flex-col px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
 
         {/* ── Top bar ─────────────────────────────────────────────────── */}
         <header className="flex items-center justify-between pt-4 pb-2 min-h-[56px]">
