@@ -85,6 +85,22 @@
     "dataCleared": "Datos borrados",
     "updatingFx": "Actualizando conversiones…"
   },
+  "Auth": {
+    "loginTitle": "Cóndor",
+    "loginTagline": "Lo ve todo desde arriba.",
+    "loginSubtitle": "Inicia sesión para sincronizar tus gastos en todos tus dispositivos.",
+    "continueWithGoogle": "Continuar con Google",
+    "signingIn": "Iniciando sesión…",
+    "loginError": "No se pudo iniciar sesión. Inténtalo de nuevo.",
+    "offlineTitle": "Sin conexión",
+    "offlineBody": "Necesitas conexión a internet para iniciar sesión la primera vez.",
+    "privacyNote": "Solo usamos tu cuenta de Google para identificarte.",
+    "account": "CUENTA",
+    "signedInAs": "Sesión iniciada como",
+    "signOut": "Cerrar sesión",
+    "signingOut": "Cerrando sesión…",
+    "signOutError": "No se pudo cerrar sesión."
+  },
   "Anadir": {
     "titleAdd": "Añadir gasto",
     "titleEdit": "Editar gasto",

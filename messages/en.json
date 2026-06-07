@@ -85,6 +85,22 @@
     "dataCleared": "Data cleared",
     "updatingFx": "Updating conversions…"
   },
+  "Auth": {
+    "loginTitle": "Cóndor",
+    "loginTagline": "It sees everything from above.",
+    "loginSubtitle": "Sign in to sync your expenses across all your devices.",
+    "continueWithGoogle": "Continue with Google",
+    "signingIn": "Signing in…",
+    "loginError": "Could not sign in. Please try again.",
+    "offlineTitle": "You're offline",
+    "offlineBody": "You need an internet connection to sign in the first time.",
+    "privacyNote": "We only use your Google account to identify you.",
+    "account": "ACCOUNT",
+    "signedInAs": "Signed in as",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…",
+    "signOutError": "Could not sign out."
+  },
   "Anadir": {
     "titleAdd": "Add expense",
     "titleEdit": "Edit expense",
