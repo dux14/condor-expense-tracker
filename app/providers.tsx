@@ -8,6 +8,7 @@ import { getMessages } from '@/lib/i18n/messages';
 import CondorLogo from '@/components/common/CondorLogo';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { Toaster } from '@/components/ui/sonner';
+import { LockGate } from '@/components/lock/LockGate';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const hydrate = useCondorStore((s) => s.hydrate);
@@ -48,7 +49,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <CondorLogo animate size={120} />
         </div>
       ) : (
-        children
+        <LockGate>{children}</LockGate>
       )}
       <ServiceWorkerRegister />
       <Toaster theme="system" />
