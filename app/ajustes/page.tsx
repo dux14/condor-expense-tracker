@@ -14,6 +14,7 @@ import { SettingRow } from '@/components/settings/SettingRow'
 import { AccountSection } from '@/components/settings/AccountSection'
 import { SegmentedControl } from '@/components/settings/SegmentedControl'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { LockSettings } from '@/components/lock/LockSettings'
 import CondorLogo from '@/components/common/CondorLogo'
 import { BottomNav } from '@/components/nav/BottomNav'
 import {
@@ -216,6 +217,8 @@ export default function AjustesPage() {
 
           </div>
         </section>
+
+        <LockSettings />
 
         {/* ── Data card ─────────────────────────────────────────────── */}
         <section className="mb-5">
