@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
@@ -9,6 +9,9 @@ vi.mock('@/lib/auth/supabase-browser', () => ({
   createClient: () => ({ auth: { signInWithOAuth } }),
 }));
 
+vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
+
+import { toast } from 'sonner';
 import LoginScreen from '@/components/auth/LoginScreen';
 
 function withIntl(ui: React.ReactElement) {
@@ -23,6 +26,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   signInWithOAuth.mockResolvedValue({ data: {}, error: null });
   // jsdom: default online
+  Object.defineProperty(navigator, 'onLine', { value: true, configurable: true });
+});
+
+afterEach(() => {
   Object.defineProperty(navigator, 'onLine', { value: true, configurable: true });
 });
 
@@ -57,5 +64,14 @@ describe('LoginScreen', () => {
     expect(
       screen.getByRole('button', { name: /Continuar con Google/i }),
     ).toBeDisabled();
+  });
+
+  it('shows a toast error and re-enables the button when OAuth fails', async () => {
+    signInWithOAuth.mockResolvedValue({ data: {}, error: new Error('boom') });
+    render(withIntl(<LoginScreen />));
+    const button = screen.getByRole('button', { name: /Continuar con Google/i });
+    await userEvent.click(button);
+    expect(toast.error).toHaveBeenCalled();
+    expect(button).not.toBeDisabled();
   });
 });

@@ -20,7 +20,9 @@ function GoogleG() {
 export default function LoginScreen() {
   const t = useTranslations('Auth');
   const [busy, setBusy] = React.useState(false);
-  const [online, setOnline] = React.useState(true);
+  const [online, setOnline] = React.useState(() =>
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
+  );
 
   React.useEffect(() => {
     const sync = () => setOnline(navigator.onLine);
@@ -50,7 +52,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center bg-bg px-6 pt-[env(safe-area-inset-top)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+    <main className="flex min-h-dvh flex-col items-center justify-center bg-bg px-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
       <div className="flex w-full max-w-[360px] flex-col items-center text-center">
         <CondorLogo size={96} animate />
         <h1 className="mt-6 font-heading text-3xl font-semibold text-text">
