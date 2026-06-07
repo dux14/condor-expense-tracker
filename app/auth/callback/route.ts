@@ -9,7 +9,22 @@ import { createClient } from '@/lib/auth/supabase-server';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+
+  // Sanitize `next`: only accept same-origin paths.
+  // Construct via new URL(rawNext, origin) and assert the origin matches to
+  // prevent open-redirect attacks (e.g. ?next=@evil.com or ?next=//evil.com).
+  const rawNext = searchParams.get('next');
+  let next = '/';
+  if (rawNext) {
+    try {
+      const resolved = new URL(rawNext, origin);
+      if (resolved.origin === origin) {
+        next = resolved.pathname + resolved.search + resolved.hash;
+      }
+    } catch {
+      // malformed URL → fall back to '/'
+    }
+  }
 
   if (code) {
     const supabase = await createClient();
