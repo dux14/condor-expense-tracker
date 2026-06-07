@@ -353,8 +353,8 @@ function AnadirContent() {
 }
 
 // ---------------------------------------------------------------------------
-// Page export — wraps content in Suspense for static export compatibility
-// (useSearchParams requires Suspense boundary with output: 'export')
+// Page export — wraps content in Suspense because useSearchParams() opts
+// into dynamic rendering and requires a Suspense boundary in App Router.
 // ---------------------------------------------------------------------------
 
 export default function AnadirPage() {
