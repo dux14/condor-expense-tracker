@@ -17,6 +17,15 @@ function isPublic(pathname: string): boolean {
  * tokens are persisted.
  */
 export async function updateSession(request: NextRequest) {
+  // TEST-ONLY: never active in production. Lets Playwright simulate a signed-in
+  // session without a real OAuth handshake. Guarded by NODE_ENV !== 'production'.
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    request.cookies.get('e2e-auth')?.value === '1'
+  ) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

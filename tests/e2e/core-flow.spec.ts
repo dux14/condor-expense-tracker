@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Route } from '@playwright/test'
+import { stubSession } from './_auth'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -92,6 +93,7 @@ function todayKey(): string {
 
 test.describe('Cóndor core flow', () => {
   test.beforeEach(async ({ page }) => {
+    await stubSession(page.context())
     await page.goto('/')
     // Clear any leftover data from previous tests
     await page.evaluate(() => {

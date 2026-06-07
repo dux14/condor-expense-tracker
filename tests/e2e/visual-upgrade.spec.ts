@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { stubSession } from './_auth'
 
 // ---------------------------------------------------------------------------
 // E2E coverage for the visual-upgrade batch:
@@ -19,6 +20,7 @@ async function clearCondorData(page: Page) {
 
 test.describe('Visual upgrade', () => {
   test.beforeEach(async ({ page }) => {
+    await stubSession(page.context())
     await page.goto('/')
     await clearCondorData(page)
   })

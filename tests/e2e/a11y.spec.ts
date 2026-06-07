@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { stubSession } from './_auth'
 
 // ---------------------------------------------------------------------------
 // Seed helper (mirrors core-flow pattern)
@@ -115,6 +116,7 @@ async function runAxe(page: import('@playwright/test').Page, route: string) {
 test.describe('Accessibility (axe wcag2a + wcag2aa)', () => {
   // / — Home (bars view)
   test('/ — home page passes axe (bars view, with data)', async ({ page }) => {
+    await stubSession(page.context())
     await seedData(page)
     await page.goto('/')
     // Wait for store hydration
@@ -124,6 +126,7 @@ test.describe('Accessibility (axe wcag2a + wcag2aa)', () => {
 
   // / — Home (donut view)
   test('/ — home page passes axe (donut view)', async ({ page }) => {
+    await stubSession(page.context())
     await seedData(page)
     await page.goto('/')
     await expect(page.getByTestId('month-total')).toBeVisible({ timeout: 10_000 })
@@ -133,6 +136,7 @@ test.describe('Accessibility (axe wcag2a + wcag2aa)', () => {
 
   // / — Home (treemap view)
   test('/ — home page passes axe (treemap view)', async ({ page }) => {
+    await stubSession(page.context())
     await seedData(page)
     await page.goto('/')
     await expect(page.getByTestId('month-total')).toBeVisible({ timeout: 10_000 })
@@ -142,6 +146,7 @@ test.describe('Accessibility (axe wcag2a + wcag2aa)', () => {
 
   // /anadir
   test('/anadir — add expense page passes axe', async ({ page }) => {
+    await stubSession(page.context())
     await seedData(page)
     await page.goto('/anadir')
     await expect(page.getByTestId('amount-input')).toBeVisible({ timeout: 10_000 })
@@ -150,6 +155,7 @@ test.describe('Accessibility (axe wcag2a + wcag2aa)', () => {
 
   // /categorias
   test('/categorias — categories page passes axe', async ({ page }) => {
+    await stubSession(page.context())
     await seedData(page)
     await page.goto('/categorias')
     // Wait for page to settle
@@ -159,6 +165,7 @@ test.describe('Accessibility (axe wcag2a + wcag2aa)', () => {
 
   // /ajustes
   test('/ajustes — settings page passes axe', async ({ page }) => {
+    await stubSession(page.context())
     await seedData(page)
     await page.goto('/ajustes')
     await page.waitForLoadState('networkidle')
@@ -167,6 +174,7 @@ test.describe('Accessibility (axe wcag2a + wcag2aa)', () => {
 
   // /historico
   test('/historico — historico page passes axe', async ({ page }) => {
+    await stubSession(page.context())
     await seedData(page)
     await page.goto('/historico')
     // Wait for transaction rows to appear
