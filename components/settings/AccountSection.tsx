@@ -22,6 +22,7 @@ export function AccountSection() {
   const initial = (name || email || '?').charAt(0).toUpperCase();
 
   async function handleSignOut() {
+    if (busy) return;
     setBusy(true);
     try {
       const supabase = createClient();

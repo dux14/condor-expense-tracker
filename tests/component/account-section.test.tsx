@@ -48,4 +48,27 @@ describe('AccountSection', () => {
     expect(signOut).toHaveBeenCalled();
     expect(replace).toHaveBeenCalledWith('/login');
   });
+
+  it('ignores a second click while sign-out is in progress', async () => {
+    // Keep signOut pending so busy stays true after the first click
+    let resolvePending!: () => void;
+    signOut.mockReturnValueOnce(
+      new Promise<{ error: null }>((resolve) => {
+        resolvePending = () => resolve({ error: null });
+      }),
+    );
+
+    render(withIntl(<AccountSection />));
+    const btn = screen.getByRole('button', { name: /Cerrar sesión/i });
+
+    // First click starts the in-flight sign-out
+    await userEvent.click(btn);
+    // Second click should be swallowed by the `if (busy) return` guard
+    await userEvent.click(btn);
+
+    expect(signOut).toHaveBeenCalledTimes(1);
+
+    // Clean up: resolve the promise so the component can unmount cleanly
+    resolvePending();
+  });
 });
