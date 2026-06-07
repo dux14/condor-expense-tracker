@@ -11,6 +11,7 @@ import { KNOWN_CURRENCIES } from '@/lib/domain/schemas'
 import type { DashboardView, ThemePref, Locale } from '@/lib/domain/types'
 
 import { SettingRow } from '@/components/settings/SettingRow'
+import { AccountSection } from '@/components/settings/AccountSection'
 import { SegmentedControl } from '@/components/settings/SegmentedControl'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import CondorLogo from '@/components/common/CondorLogo'
@@ -113,6 +114,9 @@ export default function AjustesPage() {
             {t('title')}
           </h1>
         </header>
+
+        {/* ── Account card ──────────────────────────────────────────── */}
+        <AccountSection />
 
         {/* ── Preferences card ──────────────────────────────────────── */}
         <section className="mb-5">

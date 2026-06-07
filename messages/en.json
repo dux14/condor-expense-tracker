@@ -81,7 +81,7 @@
     "wipeConfirmBody": "This will permanently delete all your expenses, custom categories, and settings. This cannot be undone.",
     "about": "ABOUT",
     "version": "v1.0 · Phase 1",
-    "localNote": "Your data is stored only on this device.",
+    "localNote": "Your data syncs securely with your Google account.",
     "dataCleared": "Data cleared",
     "updatingFx": "Updating conversions…"
   },

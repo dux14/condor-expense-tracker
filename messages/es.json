@@ -81,7 +81,7 @@
     "wipeConfirmBody": "Esta acción eliminará todos tus gastos, categorías personalizadas y ajustes. No se puede deshacer.",
     "about": "ACERCA DE",
     "version": "v1.0 · Fase 1",
-    "localNote": "Tus datos se guardan solo en este dispositivo.",
+    "localNote": "Tus datos se sincronizan de forma segura con tu cuenta de Google.",
     "dataCleared": "Datos borrados",
     "updatingFx": "Actualizando conversiones…"
   },
