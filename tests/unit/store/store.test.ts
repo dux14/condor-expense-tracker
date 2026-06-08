@@ -441,6 +441,40 @@ describe('store — learnCategoryRule', () => {
   });
 });
 
+describe('store — learnCategoryRule id stability (no stale duplicate)', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('re-learning same merchant with a different category reuses the rule id and leaves exactly one row in the repo', async () => {
+    const repo = makeFakeRepo();
+    const fx = makeFakeFx(1);
+    const store = createCondorStore(repo, fx);
+    await store.getState().hydrate();
+
+    // First learn: UBER → preset-transporte
+    await store.getState().learnCategoryRule('UBER', 'preset-transporte');
+    const firstId = store.getState().categoryRules[0].id;
+
+    // Second learn: same merchant, different category
+    await store.getState().learnCategoryRule('UBER', 'preset-comida');
+
+    // After reload, repo must have exactly ONE rule
+    const repoRules = await repo.listCategoryRules();
+    expect(repoRules).toHaveLength(1);
+
+    // The surviving rule must point to the NEW category
+    expect(repoRules[0].categoryId).toBe('preset-comida');
+
+    // The id must be STABLE (same row replaced, not a new insert)
+    expect(repoRules[0].id).toBe(firstId);
+
+    // In-memory state must also be consistent
+    const stateRules = store.getState().categoryRules;
+    expect(stateRules).toHaveLength(1);
+    expect(stateRules[0].categoryId).toBe('preset-comida');
+    expect(stateRules[0].id).toBe(firstId);
+  });
+});
+
 describe('store — hydrate loads categoryRules', () => {
   beforeEach(() => { localStorage.clear(); });
 

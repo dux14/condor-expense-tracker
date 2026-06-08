@@ -304,7 +304,10 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
 
     async learnCategoryRule(merchant, categoryId) {
       const { categoryRules } = get();
-      const rule = buildRule(merchant, categoryId);
+      const built = buildRule(merchant, categoryId);
+      const existing = categoryRules.find((r) => r.pattern === built.pattern);
+      // Reuse the existing rule's id so upsert REPLACES it (not insert a stale duplicate).
+      const rule = existing ? { ...existing, categoryId } : built;
       const next = [...categoryRules.filter((r) => r.pattern !== rule.pattern), rule];
       await repo.upsertCategoryRule(rule);
       set({ categoryRules: next });
