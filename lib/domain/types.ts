@@ -45,3 +45,9 @@ export interface ExportBundle {
   categories: Category[];
   settings: Settings;
 }
+
+export interface CategoryRule {
+  id: string;            // crypto.randomUUID()
+  pattern: string;       // normalized merchant key (uppercase, no accents, single spaces)
+  categoryId: string;    // target category id
+}
