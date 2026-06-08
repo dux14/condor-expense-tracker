@@ -25,7 +25,7 @@ describe("resolveFxRate", () => {
   it("memory-cache hit avoids DB and upstream", async () => {
     const deps = makeDeps();
     await resolveFxRate({ from: "USD", to: "COP", date: DATE }, deps); // primes mem cache
-    deps.dbGet.mockClear(); deps.fetchUpstream.mockClear();
+    vi.mocked(deps.dbGet).mockClear(); vi.mocked(deps.fetchUpstream).mockClear();
     const r = await resolveFxRate({ from: "USD", to: "COP", date: DATE }, deps);
     expect(r).toBe(4000);
     expect(deps.dbGet).not.toHaveBeenCalled();
