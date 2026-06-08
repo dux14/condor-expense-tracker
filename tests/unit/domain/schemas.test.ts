@@ -75,6 +75,15 @@ describe('parseExpense', () => {
   it('throws for amount = 0', () => {
     expect(() => parseExpense({ ...validExpense, amount: 0 })).toThrow();
   });
+
+  it('parses source = "import" without throwing', () => {
+    const result = parseExpense({ ...validExpense, source: 'import' });
+    expect(result.source).toBe('import');
+  });
+
+  it('throws for source = "bogus"', () => {
+    expect(() => parseExpense({ ...validExpense, source: 'bogus' })).toThrow();
+  });
 });
 
 describe('categorySchema', () => {

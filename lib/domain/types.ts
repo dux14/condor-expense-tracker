@@ -16,7 +16,7 @@ export interface Expense {
   categoryId: string;
   merchant?: string;
   note?: string;
-  source: 'manual';         // Phase 2 adds 'import'
+  source: 'manual' | 'import'; // 'import' = parsed from a bank-statement PDF (F6)
   createdAt: string;        // ISO timestamp
   updatedAt: string;        // ISO timestamp
 }
