@@ -1,4 +1,4 @@
-import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
 
 export interface Repository {
   listExpenses(): Promise<Expense[]>;
@@ -11,4 +11,6 @@ export interface Repository {
   putSettings(s: Settings): Promise<Settings>;
   exportAll(): Promise<ExportBundle>;
   wipeAll(): Promise<void>;
+  listCategoryRules(): Promise<CategoryRule[]>;
+  upsertCategoryRule(r: CategoryRule): Promise<CategoryRule>;
 }

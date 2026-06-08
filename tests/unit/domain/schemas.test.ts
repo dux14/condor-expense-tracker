@@ -1,4 +1,4 @@
-import { expenseSchema, categorySchema, settingsSchema, exportBundleSchema, parseExpense } from '@/lib/domain/schemas';
+import { expenseSchema, categorySchema, settingsSchema, exportBundleSchema, parseExpense, categoryRuleSchema, parseCategoryRule } from '@/lib/domain/schemas';
 import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
 
 const validExpense: Expense = {
@@ -131,5 +131,48 @@ describe('exportBundleSchema', () => {
     };
     const result = exportBundleSchema.safeParse(bundle);
     expect(result.success).toBe(true);
+  });
+});
+
+describe('categoryRuleSchema', () => {
+  it('parses a valid rule', () => {
+    const result = categoryRuleSchema.safeParse({
+      id: 'rule-1',
+      pattern: 'UBER',
+      categoryId: 'preset-transporte',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects empty pattern', () => {
+    const result = categoryRuleSchema.safeParse({
+      id: 'rule-1',
+      pattern: '',
+      categoryId: 'preset-transporte',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects missing categoryId', () => {
+    const result = categoryRuleSchema.safeParse({
+      id: 'rule-1',
+      pattern: 'UBER',
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('parseCategoryRule', () => {
+  it('parses a valid rule and returns CategoryRule', () => {
+    const result = parseCategoryRule({
+      id: 'rule-1',
+      pattern: 'UBER',
+      categoryId: 'preset-transporte',
+    });
+    expect(result).toMatchObject({ id: 'rule-1', pattern: 'UBER', categoryId: 'preset-transporte' });
+  });
+
+  it('throws for empty pattern', () => {
+    expect(() => parseCategoryRule({ id: 'rule-1', pattern: '', categoryId: 'preset-transporte' })).toThrow();
   });
 });

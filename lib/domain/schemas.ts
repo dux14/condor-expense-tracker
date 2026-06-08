@@ -65,6 +65,16 @@ export const exportBundleSchema = z.object({
   settings: settingsSchema,
 });
 
+export const categoryRuleSchema = z.object({
+  id: z.string(),
+  pattern: z.string().min(1),
+  categoryId: z.string().min(1),
+});
+
+export function parseCategoryRule(input: unknown): import('./types').CategoryRule {
+  return categoryRuleSchema.parse(input);
+}
+
 /**
  * Validates and parses an Expense input.
  * Unknown currencies (not in KNOWN_CURRENCIES) are allowed — a console.warn is emitted.
