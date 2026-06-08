@@ -27,7 +27,21 @@ function nowISO(): string {
   return new Date().toISOString();
 }
 
-/** Comparable LWW timestamp for a record: updatedAt if present, else synctime. */
+/**
+ * Comparable LWW timestamp for a record: `updatedAt` if present, else the
+ * device-local synctime side-map.
+ *
+ * LIMITATION (F4, by design): the synctime side-map (`condor:synctimes`) is
+ * DEVICE-LOCAL and never travels with the remote payload. So for entities
+ * WITHOUT `updatedAt` (Category, Settings) a "remote" stamp is really this
+ * device's own clock — true cross-device LWW is NOT achieved for them.
+ * Practical effect: concurrent Category/Settings edits on two devices are not
+ * conflict-resolved by timestamp; the last device to pull adopts remote for
+ * rows it lacks. This is the plan's accepted trade-off to keep F4 a pure
+ * decorator (no domain-type / F3-schema change). When F3 adds `updated_at`
+ * columns for these tables, `lwwStamp` already prefers a record's `updatedAt`,
+ * so no change here is needed. See the syncing-repository test that pins this.
+ */
 function lwwStamp(
   entity: OutboxEntity,
   id: string,

@@ -224,3 +224,33 @@ describe('SyncingRepository.pull — reconcile + tombstones', () => {
     expect(remote.expenses.map(e => e.id)).toEqual(['durable']);
   });
 });
+
+describe('SyncingRepository — Category/Settings LWW is device-local (documented F4 limitation)', () => {
+  beforeEach(() => localStorage.clear());
+
+  // Categories have no `updatedAt`; their LWW clock is the device-local synctime
+  // side-map, which never travels with the remote. This test PINS that intended
+  // behavior — it is NOT asserting true cross-device LWW (which F4 does not
+  // provide for Category/Settings). See lwwStamp's LIMITATION note.
+  it('pull adopts a remote category the device lacks (no shared timestamp needed)', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+
+    await remote.upsertCategory({ id: 'c-remote', name: 'Remote', color: '#abc', icon: 'comida', isPreset: false });
+    await sut.pull();
+
+    expect((await sut.listCategories()).some(c => c.id === 'c-remote')).toBe(true);
+  });
+
+  it('flush of a local category upsert pushes to remote (local synctime is the only clock)', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+
+    await sut.upsertCategory({ id: 'c1', name: 'Local', color: '#fff', icon: 'comida', isPreset: false });
+    await sut.flush();
+
+    expect(remote.categories.some(c => c.id === 'c1')).toBe(true);
+  });
+});
