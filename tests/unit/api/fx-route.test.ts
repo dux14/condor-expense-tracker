@@ -26,7 +26,6 @@ import { __resetRateLimit } from "@/lib/api/rate-limit";
 function req(qs: string) {
   return new NextRequest(`https://x.test/api/fx?${qs}`);
 }
-const TODAY = new Date().toISOString().slice(0, 10);
 
 beforeEach(() => {
   vi.clearAllMocks();
