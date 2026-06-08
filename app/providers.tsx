@@ -9,6 +9,7 @@ import CondorLogo from '@/components/common/CondorLogo';
 import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 import { Toaster } from '@/components/ui/sonner';
 import { LockGate } from '@/components/lock/LockGate';
+import { SessionSync } from '@/components/sync/SessionSync';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const hydrate = useCondorStore((s) => s.hydrate);
@@ -51,6 +52,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       ) : (
         <LockGate>{children}</LockGate>
       )}
+      <SessionSync />
       <ServiceWorkerRegister />
       <Toaster theme="system" />
     </NextIntlClientProvider>
