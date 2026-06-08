@@ -19,7 +19,7 @@ import type { RawTransaction } from '@/lib/import/templates/types'
 
 type Row = CategorizedTransaction & { selected: boolean }
 
-type Phase = 'idle' | 'parsing' | 'review' | 'error' | 'done'
+type Phase = 'idle' | 'parsing' | 'review' | 'done'
 
 // ---------- Component --------------------------------------------------------
 
@@ -35,6 +35,7 @@ export function ImportFlow() {
   const [phase, setPhase] = React.useState<Phase>('idle')
   const [rows, setRows] = React.useState<Row[]>([])
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const importingRef = React.useRef(false)
 
   // ---------- Error toast mapping -------------------------------------------
 
@@ -78,8 +79,6 @@ export function ImportFlow() {
       } else {
         toast(t('errExtract'))
       }
-      setPhase('error')
-      // Return to idle after the toast so the user can try again
       setPhase('idle')
     }
   }
@@ -131,23 +130,35 @@ export function ImportFlow() {
   // ---------- Import handler ------------------------------------------------
 
   async function handleImport() {
+    if (importingRef.current) return
+    importingRef.current = true
+
     // Only import selected rows with a valid positive amount
     const toImport = rows.filter((r) => r.selected && Number.isFinite(r.amount) && r.amount > 0)
-    if (toImport.length === 0) return
-
-    for (const row of toImport) {
-      await addImportedExpense({
-        amount: row.amount,
-        currency: row.currency,
-        date: row.date,
-        categoryId: row.categoryId,
-        merchant: row.description,
-      })
+    if (toImport.length === 0) {
+      importingRef.current = false
+      return
     }
 
-    toast(t('imported', { n: toImport.length }))
-    setPhase('done')
-    router.push('/historico')
+    try {
+      for (const row of toImport) {
+        await addImportedExpense({
+          amount: row.amount,
+          currency: row.currency,
+          date: row.date,
+          categoryId: row.categoryId,
+          merchant: row.description,
+        })
+      }
+
+      toast(t('imported', { n: toImport.length }))
+      setPhase('done')
+      router.push('/historico')
+    } catch {
+      toast(t('errExtract'))
+    } finally {
+      importingRef.current = false
+    }
   }
 
   // ---------- Trigger file dialog -------------------------------------------
