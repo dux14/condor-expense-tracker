@@ -3,7 +3,7 @@ import { SyncingRepository } from '@/lib/data/syncing-repository';
 import { LocalStorageRepository } from '@/lib/data/local-storage-repository';
 import { SyncQueue } from '@/lib/data/sync-queue';
 import { TombstoneStore } from '@/lib/data/tombstones';
-import { FakeRemoteRepository } from '../../helpers/fake-remote-repository';
+import { FakeRemoteRepository, offlineGate } from '../../helpers/fake-remote-repository';
 import type { Expense } from '@/lib/domain/types';
 
 function makeExpense(o: Partial<Expense> = {}): Expense {
@@ -71,5 +71,81 @@ describe('SyncingRepository — reads + optimistic writes', () => {
     expect(localStorage.getItem('condor:outbox')).toBeNull();
     expect(localStorage.getItem('condor:tombstones')).toBeNull();
     expect(await repo.listExpenses()).toEqual([]);
+  });
+});
+
+describe('SyncingRepository.flush — outbox drain + LWW', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('offline add → flush after reconnect pushes to remote and clears the op', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const { repo: gated, setOnline } = offlineGate(remote);
+    const sut = new SyncingRepository(local, gated);
+
+    setOnline(false);
+    await sut.upsertExpense(makeExpense({ id: 'pending' }));
+    await sut.flush();                              // offline → stays queued, status offline
+    expect(remote.expenses).toHaveLength(0);
+    expect(new SyncQueue().peekAll()).toHaveLength(1);
+    expect(sut.getStatus()).toBe('offline');
+
+    setOnline(true);
+    await sut.flush();                              // online → pushes
+    expect(remote.expenses.map(e => e.id)).toEqual(['pending']);
+    expect(new SyncQueue().peekAll()).toHaveLength(0);
+    expect(sut.getStatus()).toBe('synced');
+  });
+
+  it('LWW: if remote has a NEWER updatedAt, remote wins and local is updated', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+
+    // remote already has a newer version of e1
+    remote.expenses.push(makeExpense({ id: 'e1', amount: 999, updatedAt: '2026-02-01T00:00:00.000Z' }));
+    // local enqueues an OLDER write
+    await sut.upsertExpense(makeExpense({ id: 'e1', amount: 100, updatedAt: '2026-01-01T00:00:00.000Z' }));
+
+    await sut.flush();
+
+    // remote kept its newer value; local was reconciled to it
+    expect(remote.expenses.find(e => e.id === 'e1')!.amount).toBe(999);
+    expect((await sut.listExpenses()).find(e => e.id === 'e1')!.amount).toBe(999);
+    expect(new SyncQueue().peekAll()).toHaveLength(0);
+  });
+
+  it('LWW: if local is NEWER, local op wins and overwrites remote', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+    remote.expenses.push(makeExpense({ id: 'e1', amount: 1, updatedAt: '2026-01-01T00:00:00.000Z' }));
+    await sut.upsertExpense(makeExpense({ id: 'e1', amount: 555, updatedAt: '2026-03-01T00:00:00.000Z' }));
+    await sut.flush();
+    expect(remote.expenses.find(e => e.id === 'e1')!.amount).toBe(555);
+  });
+
+  it('flush of a delete op removes the remote row and keeps the tombstone until pull confirms', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+    remote.expenses.push(makeExpense({ id: 'del' }));
+    await local.upsertExpense(makeExpense({ id: 'del' }));
+    await sut.deleteExpense('del');
+    await sut.flush();
+    expect(remote.expenses).toHaveLength(0);
+    expect(new SyncQueue().peekAll()).toHaveLength(0);
+    expect(new TombstoneStore().isDeleted('expense', 'del')).toBe(true); // cleared by pull, not flush
+  });
+
+  it('a failing remote write sets status=error and leaves the op queued', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    remote.upsertExpense = async () => { throw new Error('boom'); };
+    const sut = new SyncingRepository(local, remote);
+    await sut.upsertExpense(makeExpense({ id: 'e1' }));
+    await sut.flush();
+    expect(sut.getStatus()).toBe('error');
+    expect(new SyncQueue().peekAll()).toHaveLength(1);
   });
 });
