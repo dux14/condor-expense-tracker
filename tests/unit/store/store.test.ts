@@ -334,6 +334,29 @@ describe('store — hydrate', () => {
   });
 });
 
+describe('store — setRepo', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('setRepo swaps the repo so subsequent writes go to repoB, not repoA', async () => {
+    const repoA = makeFakeRepo();
+    const repoB = makeFakeRepo();
+    const fx = makeFakeFx(1);
+    const store = createCondorStore(repoA, fx);
+    await store.getState().hydrate();
+
+    // Swap to repoB
+    store.getState().setRepo(repoB);
+
+    // A subsequent write should hit repoB, not repoA
+    await store.getState().addCategory({ name: 'Test', color: '#ff0000', icon: 'otros' });
+
+    expect(repoB.upsertCategory).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Test' }),
+    );
+    expect(repoA.upsertCategory).not.toHaveBeenCalled();
+  });
+});
+
 describe('store — wipeAll', () => {
   beforeEach(() => { localStorage.clear(); });
 

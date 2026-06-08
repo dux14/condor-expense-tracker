@@ -225,6 +225,24 @@ describe('SyncingRepository.pull — reconcile + tombstones', () => {
   });
 });
 
+describe('SyncingRepository — onWrite', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('notifies listener after upsertExpense and unsubscribe stops notifications', async () => {
+    const { repo } = makeSut();
+    const spy = vi.fn();
+    const unsub = repo.onWrite(spy);
+
+    await repo.upsertExpense(makeExpense({ id: 'w1' }));
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    // Unsubscribe — subsequent writes must NOT call spy again
+    unsub();
+    await repo.upsertExpense(makeExpense({ id: 'w2' }));
+    expect(spy).toHaveBeenCalledTimes(1); // still 1
+  });
+});
+
 describe('SyncingRepository — Category/Settings LWW is device-local (documented F4 limitation)', () => {
   beforeEach(() => localStorage.clear());
 
