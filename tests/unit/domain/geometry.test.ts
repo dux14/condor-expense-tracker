@@ -4,6 +4,8 @@ import {
   squarify,
   donutArcs,
   dayBarHeights,
+  median,
+  mad,
 } from '@/lib/domain/geometry'
 
 // ---------------------------------------------------------------------------
@@ -259,5 +261,43 @@ describe('dayBarHeights', () => {
       expect(h).toBeGreaterThanOrEqual(0)
       expect(h).toBeLessThanOrEqual(80)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// median
+// ---------------------------------------------------------------------------
+
+describe('median', () => {
+  it('returns 0 for empty input', () => {
+    expect(median([])).toBe(0)
+  })
+  it('returns the middle value for odd-length sorted-or-not input', () => {
+    expect(median([3, 1, 2])).toBe(2)
+  })
+  it('averages the two middle values for even-length input', () => {
+    expect(median([4, 1, 3, 2])).toBe(2.5)
+  })
+  it('does not mutate the input array', () => {
+    const arr = [3, 1, 2]
+    median(arr)
+    expect(arr).toEqual([3, 1, 2])
+  })
+})
+
+// ---------------------------------------------------------------------------
+// mad
+// ---------------------------------------------------------------------------
+
+describe('mad', () => {
+  it('returns 0 for empty input', () => {
+    expect(mad([])).toBe(0)
+  })
+  it('returns 0 when all values are identical', () => {
+    expect(mad([5, 5, 5])).toBe(0)
+  })
+  it('computes the median of absolute deviations from the median', () => {
+    // values [1,2,3,4,5] → median 3 → deviations [2,1,0,1,2] → median of those = 1
+    expect(mad([1, 2, 3, 4, 5])).toBe(1)
   })
 })
