@@ -7,7 +7,7 @@ import { newId } from '@/lib/domain/ids';
 import type { Repository } from '@/lib/data/repository';
 import { LocalStorageRepository, DEFAULT_SETTINGS } from '@/lib/data/local-storage-repository';
 import type { FxProvider } from '@/lib/fx/fx-provider';
-import { FrankfurterFxProvider } from '@/lib/fx/frankfurter-fx-provider';
+import { ServerFxProvider } from '@/lib/fx/server-fx-provider';
 import { todayMonthKey } from '@/lib/format/date';
 import { migrate } from './migrations';
 
@@ -277,7 +277,11 @@ export function createCondorStore(repo: Repository, fx: FxProvider) {
 // and call `controller.notifyWrite()` after store mutations. Unauthenticated/SSR
 // keeps the bare LocalStorageRepository below.
 const defaultRepo = new LocalStorageRepository();
-const defaultFx = new FrankfurterFxProvider();
+// FX now flows through our server proxy (cached + rate-limited). The proxy
+// falls back to a direct Frankfurter call internally when it is unreachable
+// but the network is up; the store still receives null gracefully when no
+// rate can be resolved.
+const defaultFx = new ServerFxProvider();
 export const defaultStore = createCondorStore(defaultRepo, defaultFx);
 
 export function useCondorStore(): CondorState;
