@@ -392,3 +392,71 @@ describe('store — wipeAll', () => {
     expect(repo.wipeAll).toHaveBeenCalled();
   });
 });
+
+describe('store — addImportedExpense', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('stamps source=import, computes FX, and calls repo.upsertExpense', async () => {
+    const repo = makeFakeRepo();
+    const fx = makeFakeFx(4000);
+    const store = createCondorStore(repo, fx);
+    await store.getState().hydrate();
+
+    await store.getState().addImportedExpense({
+      amount: 100,
+      currency: 'USD',
+      date: '2026-05-03',
+      categoryId: 'preset-comida',
+      merchant: 'X',
+    });
+
+    const { expenses } = store.getState();
+    expect(expenses).toHaveLength(1);
+    const exp = expenses[0];
+    expect(exp.source).toBe('import');
+    expect(exp.fxRate).toBe(4000);
+    expect(exp.baseAmount).toBe(roundToMinorUnits(100 * 4000, 'COP'));
+    expect(fx.getRate).toHaveBeenCalledWith('USD', 'COP', '2026-05-03');
+    expect(repo.upsertExpense).toHaveBeenCalledWith(exp);
+  });
+});
+
+describe('store — learnCategoryRule', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('normalizes merchant, calls repo.upsertCategoryRule, and updates state', async () => {
+    const repo = makeFakeRepo();
+    const fx = makeFakeFx(1);
+    const store = createCondorStore(repo, fx);
+    await store.getState().hydrate();
+
+    await store.getState().learnCategoryRule('  Súper Éxito ', 'preset-mercado');
+
+    expect(repo.upsertCategoryRule).toHaveBeenCalledWith(
+      expect.objectContaining({ pattern: 'SUPER EXITO', categoryId: 'preset-mercado' }),
+    );
+    const { categoryRules } = store.getState();
+    expect(categoryRules).toHaveLength(1);
+    expect(categoryRules[0]).toMatchObject({ pattern: 'SUPER EXITO', categoryId: 'preset-mercado' });
+  });
+});
+
+describe('store — hydrate loads categoryRules', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('loads rules from repo into state on hydrate', async () => {
+    const fakeRule: CategoryRule = { id: 'rule-1', pattern: 'WALMART', categoryId: 'preset-mercado' };
+    // Pre-seed the fake repo's rules via learnCategoryRule after hydrate on a throw-away store
+    const repo = makeFakeRepo();
+    const fx = makeFakeFx(1);
+    // Seed directly by calling upsertCategoryRule on the fake repo
+    await repo.upsertCategoryRule(fakeRule);
+
+    const store = createCondorStore(repo, fx);
+    await store.getState().hydrate();
+
+    const { categoryRules } = store.getState();
+    expect(categoryRules).toHaveLength(1);
+    expect(categoryRules[0]).toMatchObject({ pattern: 'WALMART', categoryId: 'preset-mercado' });
+  });
+});

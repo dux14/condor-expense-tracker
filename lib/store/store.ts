@@ -1,6 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand/react';
-import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
 import { parseExpense } from '@/lib/domain/schemas';
 import { roundToMinorUnits } from '@/lib/format/money';
 import { newId } from '@/lib/domain/ids';
@@ -10,6 +10,7 @@ import type { FxProvider } from '@/lib/fx/fx-provider';
 import { ServerFxProvider } from '@/lib/fx/server-fx-provider';
 import { todayMonthKey } from '@/lib/format/date';
 import { migrate } from './migrations';
+import { buildRule } from '@/lib/import/rules-engine';
 
 // ---------- Small helpers ----------------------------------------------------
 
@@ -40,6 +41,7 @@ export interface CondorState {
   expenses: Expense[];
   categories: Category[];
   settings: Settings;
+  categoryRules: CategoryRule[];
   hydrated: boolean;
   month: string;
   // actions
@@ -70,6 +72,16 @@ export interface CondorState {
   exportAll(): Promise<ExportBundle>;
   wipeAll(): Promise<void>;
   setRepo(repo: Repository): void;
+  addImportedExpense(input: {
+    amount: number;
+    currency: string;
+    date: string;
+    time?: string;
+    categoryId: string;
+    merchant?: string;
+    note?: string;
+  }): Promise<void>;
+  learnCategoryRule(merchant: string, categoryId: string): Promise<void>;
 }
 
 // ---------- Factory ----------------------------------------------------------
@@ -80,14 +92,16 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
     expenses: [],
     categories: [],
     settings: { ...DEFAULT_SETTINGS },
+    categoryRules: [],
     hydrated: false,
     month: todayMonthKey(),
 
     async hydrate() {
-      const [expenses, categories, rawSettings] = await Promise.all([
+      const [expenses, categories, rawSettings, categoryRules] = await Promise.all([
         repo.listExpenses(),
         repo.listCategories(),
         repo.getSettings(),
+        repo.listCategoryRules(),
       ]);
 
       const migrated = migrate({
@@ -113,6 +127,7 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
         expenses: migrated.expenses,
         categories: migrated.categories,
         settings: migrated.settings,
+        categoryRules,
         hydrated: true,
       });
     },
@@ -267,6 +282,32 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
         repo.getSettings(),
       ]);
       set({ expenses: [], categories, settings, hydrated: true });
+    },
+
+    async addImportedExpense(input) {
+      const { settings, expenses } = get();
+      const amount = roundToMinorUnits(input.amount, input.currency);
+      const { fxRate, baseAmount } = await computeFx(
+        amount, input.currency, input.date, settings.baseCurrency, fx,
+      );
+      const now = nowISO();
+      const expense: Expense = {
+        id: newId(), amount, currency: input.currency, baseAmount, fxRate,
+        date: input.date, time: input.time, categoryId: input.categoryId,
+        merchant: input.merchant, note: input.note,
+        source: 'import', createdAt: now, updatedAt: now,
+      };
+      parseExpense(expense);
+      await repo.upsertExpense(expense);
+      set({ expenses: [...expenses, expense] });
+    },
+
+    async learnCategoryRule(merchant, categoryId) {
+      const { categoryRules } = get();
+      const rule = buildRule(merchant, categoryId);
+      const next = [...categoryRules.filter((r) => r.pattern !== rule.pattern), rule];
+      await repo.upsertCategoryRule(rule);
+      set({ categoryRules: next });
     },
 
     setRepo(next: Repository) { repo = next; },
