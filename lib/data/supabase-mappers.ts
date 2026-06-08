@@ -67,6 +67,12 @@ export function expenseToRow(expense: Expense): ExpenseRow {
   };
 }
 
+/** Normalise a Postgres timestamptz string (e.g. "…+00:00") to the `.000Z`
+ *  format used throughout the domain layer. */
+function normTs(ts: string): string {
+  return new Date(ts).toISOString();
+}
+
 export function rowToExpense(row: ExpenseRow): Expense {
   const expense: Expense = {
     id: row.id,
@@ -77,8 +83,8 @@ export function rowToExpense(row: ExpenseRow): Expense {
     date: row.date,
     categoryId: row.category_id,
     source: row.source as Expense['source'],
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: normTs(row.created_at),
+    updatedAt: normTs(row.updated_at),
   };
 
   // Only add optional keys when the value is present — toEqual deep-equality

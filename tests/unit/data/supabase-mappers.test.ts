@@ -53,6 +53,19 @@ describe('round-trip edge cases', () => {
     expect(round.note).toBe('');
     expect(round.time).toBe('');
   });
+
+  it('rowToExpense normalises Postgres "+00:00" timestamps to ".000Z"', () => {
+    // Postgres returns timestamptz as e.g. "2026-01-01T00:00:00+00:00";
+    // the domain layer uses the ".000Z" form everywhere.
+    const row: ExpenseRow = {
+      ...expenseToRow(makeExpense()),
+      created_at: '2026-01-01T00:00:00+00:00',
+      updated_at: '2026-03-15T08:30:00+00:00',
+    };
+    const expense = rowToExpense(row);
+    expect(expense.createdAt).toBe('2026-01-01T00:00:00.000Z');
+    expect(expense.updatedAt).toBe('2026-03-15T08:30:00.000Z');
+  });
 });
 
 // ── expenseToRow ──────────────────────────────────────────────────────────────
