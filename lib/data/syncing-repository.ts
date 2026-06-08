@@ -193,7 +193,85 @@ export class SyncingRepository implements Repository {
     }
   }
 
-  async pull(): Promise<void> { /* Task 7 */ }
+  async pull(): Promise<void> {
+    this.setStatus('syncing');
+    try {
+      const [remoteExpenses, remoteCategories, remoteSettings] = await Promise.all([
+        this.remote.listExpenses(),
+        this.remote.listCategories(),
+        this.remote.getSettings(),
+      ]);
+
+      await this.reconcile('expense', remoteExpenses, await this.local.listExpenses(),
+        r => r.id,
+        r => this.local.upsertExpense(r), id => this.local.deleteExpense(id));
+
+      await this.reconcile('category', remoteCategories, await this.local.listCategories(),
+        r => r.id, // categories: no updatedAt → synctime path
+        r => this.local.upsertCategory(r), id => this.local.deleteCategory(id));
+
+      // settings: singleton, LWW by synctime
+      await this.reconcileSettings(remoteSettings);
+
+      this.setStatus('synced');
+    } catch (err) {
+      this.setStatus(err instanceof Error && err.message === 'offline' ? 'offline' : 'error');
+    }
+  }
+
+  private async reconcile<T extends object>(
+    entity: OutboxEntity,
+    remoteRows: T[],
+    localRows: T[],
+    idOf: (r: T) => string,
+    upsertLocal: (r: T) => Promise<unknown>,
+    deleteLocal: (id: string) => Promise<unknown>,
+  ): Promise<void> {
+    const localById = new Map(localRows.map(r => [idOf(r), r] as const));
+    const remoteIds = new Set<string>();
+
+    for (const remote of remoteRows) {
+      const id = idOf(remote);
+      remoteIds.add(id);
+
+      // Tombstone guard with LWW: skip resurrection unless remote is newer.
+      const tomb = this.tombstones.deletedAt(entity, id);
+      if (tomb !== null) {
+        const remoteStamp = lwwStamp(entity, id, remote as { updatedAt?: string }, this.synctimes);
+        if (remoteStamp === null || remoteStamp <= tomb) {
+          // stale remote copy — re-enqueue a delete so remote eventually drops it
+          this.queue.enqueue({ op: 'delete', entity, id, payload: { id }, enqueuedAt: tomb });
+          continue;
+        }
+        // remote is newer → legit re-create: drop tombstone, fall through to upsert
+        this.tombstones.remove(entity, id);
+      }
+
+      const localRow = localById.get(id);
+      const localStamp = lwwStamp(entity, id, (localRow ?? null) as { updatedAt?: string } | null, this.synctimes);
+      const remoteStamp = lwwStamp(entity, id, remote as { updatedAt?: string }, this.synctimes);
+
+      if (!localRow || remoteStamp === null || localStamp === null || remoteStamp > localStamp) {
+        await upsertLocal(remote);
+        if (remoteStamp !== null) this.synctimes.set(entity, id, remoteStamp);
+      }
+    }
+
+    // A row gone from remote AND already confirmed (tombstoned) → finalize delete locally + drop tombstone.
+    for (const id of this.tombstones.all().filter(t => t.entity === entity).map(t => t.id)) {
+      if (!remoteIds.has(id)) {
+        await deleteLocal(id).catch(() => {});
+        this.tombstones.remove(entity, id);
+      }
+    }
+  }
+
+  private async reconcileSettings(remote: Settings): Promise<void> {
+    // Singleton with one synctime slot: pull always adopts the remote settings.
+    // (Conservative rule — settings rarely conflict. See plan note for Task 7.)
+    await this.local.putSettings(remote);
+  }
+
   async sync(): Promise<void> { await this.flush(); await this.pull(); }
 
   // expose internals to LWW helper for Task 6/7 tests

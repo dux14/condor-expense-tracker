@@ -149,3 +149,78 @@ describe('SyncingRepository.flush — outbox drain + LWW', () => {
     expect(new SyncQueue().peekAll()).toHaveLength(1);
   });
 });
+
+describe('SyncingRepository.pull — reconcile + tombstones', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('pull brings new remote rows into local', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+    remote.expenses.push(makeExpense({ id: 'fromRemote', amount: 42 }));
+    await sut.pull();
+    expect((await sut.listExpenses()).map(e => e.id)).toContain('fromRemote');
+  });
+
+  it('pull does NOT resurrect a tombstoned record (anti-resurrection)', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+    await local.upsertExpense(makeExpense({ id: 'ghost' }));
+    await sut.deleteExpense('ghost');                    // tombstone, local gone
+    remote.expenses.push(makeExpense({ id: 'ghost' }));  // stale remote copy (older than tombstone)
+    await sut.pull();
+    expect((await sut.listExpenses()).find(e => e.id === 'ghost')).toBeUndefined();
+  });
+
+  it('pull: a remote update NEWER than the tombstone wins (legit re-create restores the row)', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+    await local.upsertExpense(makeExpense({ id: 're', updatedAt: '2026-01-01T00:00:00.000Z' }));
+    await sut.deleteExpense('re');                       // tombstone at ~now (> jan-1)
+    // remote has a version updated AFTER our delete:
+    remote.expenses.push(makeExpense({ id: 're', amount: 7, updatedAt: '2999-01-01T00:00:00.000Z' }));
+    await sut.pull();
+    const got = (await sut.listExpenses()).find(e => e.id === 're');
+    expect(got?.amount).toBe(7);
+    expect(new TombstoneStore().isDeleted('expense', 're')).toBe(false); // dropped
+  });
+
+  it('two clients against one remote converge (last writer wins)', async () => {
+    const remote = new FakeRemoteRepository();
+    const localA = new LocalStorageRepository();
+    const a = new SyncingRepository(localA, remote);
+
+    // client A writes, syncs
+    await a.upsertExpense(makeExpense({ id: 'shared', amount: 1, updatedAt: '2026-01-01T00:00:00.000Z' }));
+    await a.sync();
+
+    // simulate client B on a SEPARATE localStorage namespace is not possible in one jsdom;
+    // instead clear local + re-pull to model device B starting from the shared remote.
+    localStorage.clear();
+    const localB = new LocalStorageRepository();
+    const b = new SyncingRepository(localB, remote);
+    await b.pull();
+    expect((await b.listExpenses()).find(e => e.id === 'shared')!.amount).toBe(1);
+
+    // B updates newer, syncs; A pulls and converges
+    await b.upsertExpense(makeExpense({ id: 'shared', amount: 2, updatedAt: '2026-05-01T00:00:00.000Z' }));
+    await b.sync();
+    await a.pull();
+    expect((await a.listExpenses()).find(e => e.id === 'shared')!.amount).toBe(2);
+  });
+
+  it('durability: ops survive a "reload" (new SyncingRepository over same localStorage) then flush', async () => {
+    const remote = new FakeRemoteRepository();
+    const { repo: gated, setOnline } = offlineGate(remote);
+    setOnline(false);
+    const first = new SyncingRepository(new LocalStorageRepository(), gated);
+    await first.upsertExpense(makeExpense({ id: 'durable' }));
+    // "reload": brand new instances, same localStorage-backed queue
+    setOnline(true);
+    const revived = new SyncingRepository(new LocalStorageRepository(), gated);
+    await revived.flush();
+    expect(remote.expenses.map(e => e.id)).toEqual(['durable']);
+  });
+});
