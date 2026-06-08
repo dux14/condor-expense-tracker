@@ -271,6 +271,11 @@ export function createCondorStore(repo: Repository, fx: FxProvider) {
 
 // ---------- Default instance (React) -----------------------------------------
 
+// NOTE (F4): when a Supabase session exists (F1/F3), construct the repo via
+// makeRepository({ remote: new SupabaseRepository(...) }) — which returns a
+// SyncingRepository — rebuild the store with it, then `new SyncController(repo).start()`
+// and call `controller.notifyWrite()` after store mutations. Unauthenticated/SSR
+// keeps the bare LocalStorageRepository below.
 const defaultRepo = new LocalStorageRepository();
 const defaultFx = new FrankfurterFxProvider();
 export const defaultStore = createCondorStore(defaultRepo, defaultFx);
