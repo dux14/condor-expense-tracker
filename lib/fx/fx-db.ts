@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /** Service-role client: server-only, bypasses RLS to write fx_rates. */
 function serviceClient() {
@@ -9,21 +10,18 @@ function serviceClient() {
   );
 }
 
-/** Read-only client for cache reads (fx_rates is globally readable). */
-function readClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { persistSession: false } },
-  );
-}
-
+/**
+ * Read a cached FX rate from fx_rates using an authenticated Supabase client.
+ * The table grants SELECT only to the `authenticated` role; anon is revoked.
+ * The caller (route handler) must supply the per-request authenticated client.
+ */
 export async function fxDbGet(
+  client: SupabaseClient,
   from: string,
   to: string,
   date: string,
 ): Promise<number | undefined> {
-  const { data, error } = await readClient()
+  const { data, error } = await client
     .from("fx_rates")
     .select("rate")
     .eq("from_ccy", from)

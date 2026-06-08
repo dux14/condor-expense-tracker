@@ -37,7 +37,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   // 4. Resolve: memory → fx_rates → Frankfurter (+upsert).
   const rate = await resolveFxRate(parsed.data, {
-    dbGet: fxDbGet,
+    dbGet: (from, to, date) => fxDbGet(supabase, from, to, date),
     dbUpsert: fxDbUpsert,
     fetchUpstream: fetchFrankfurter,
   });
