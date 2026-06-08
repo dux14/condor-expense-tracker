@@ -69,11 +69,13 @@ export interface CondorState {
   recomputeAllBaseAmounts(): Promise<void>;
   exportAll(): Promise<ExportBundle>;
   wipeAll(): Promise<void>;
+  setRepo(repo: Repository): void;
 }
 
 // ---------- Factory ----------------------------------------------------------
 
-export function createCondorStore(repo: Repository, fx: FxProvider) {
+export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
+  let repo = initialRepo;
   return createStore<CondorState>((set, get) => ({
     expenses: [],
     categories: [],
@@ -266,6 +268,8 @@ export function createCondorStore(repo: Repository, fx: FxProvider) {
       ]);
       set({ expenses: [], categories, settings, hydrated: true });
     },
+
+    setRepo(next: Repository) { repo = next; },
   }));
 }
 
