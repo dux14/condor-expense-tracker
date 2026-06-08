@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createCondorStore } from '@/lib/store/store';
 import type { Repository } from '@/lib/data/repository';
 import type { FxProvider } from '@/lib/fx/fx-provider';
-import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 import { DEFAULT_SETTINGS } from '@/lib/data/local-storage-repository';
 import { PRESET_CATEGORIES, OTROS_ID } from '@/lib/domain/presets';
@@ -17,6 +17,7 @@ function makeFakeRepo(initial?: {
 }): Repository {
   let expenses: Expense[] = initial?.expenses ? [...initial.expenses] : [];
   let categories: Category[] = initial?.categories ? [...initial.categories] : [...PRESET_CATEGORIES];
+  let rules: CategoryRule[] = [];
   let settings: Settings = initial?.settings ? { ...initial.settings } : { ...DEFAULT_SETTINGS };
 
   return {
@@ -52,9 +53,16 @@ function makeFakeRepo(initial?: {
       categories: [...categories],
       settings: { ...settings },
     })),
+    listCategoryRules: vi.fn(async (): Promise<CategoryRule[]> => [...rules]),
+    upsertCategoryRule: vi.fn(async (r: CategoryRule) => {
+      const i = rules.findIndex(x => x.id === r.id);
+      if (i >= 0) rules[i] = r; else rules.push(r);
+      return r;
+    }),
     wipeAll: vi.fn(async () => {
       expenses = [];
       categories = [...PRESET_CATEGORIES];
+      rules = [];
       settings = { ...DEFAULT_SETTINGS };
     }),
   };
@@ -382,5 +390,107 @@ describe('store — wipeAll', () => {
     // Categories should be re-seeded (presets)
     expect(store.getState().categories.length).toBeGreaterThan(0);
     expect(repo.wipeAll).toHaveBeenCalled();
+  });
+});
+
+describe('store — addImportedExpense', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('stamps source=import, computes FX, and calls repo.upsertExpense', async () => {
+    const repo = makeFakeRepo();
+    const fx = makeFakeFx(4000);
+    const store = createCondorStore(repo, fx);
+    await store.getState().hydrate();
+
+    await store.getState().addImportedExpense({
+      amount: 100,
+      currency: 'USD',
+      date: '2026-05-03',
+      categoryId: 'preset-comida',
+      merchant: 'X',
+    });
+
+    const { expenses } = store.getState();
+    expect(expenses).toHaveLength(1);
+    const exp = expenses[0];
+    expect(exp.source).toBe('import');
+    expect(exp.fxRate).toBe(4000);
+    expect(exp.baseAmount).toBe(roundToMinorUnits(100 * 4000, 'COP'));
+    expect(fx.getRate).toHaveBeenCalledWith('USD', 'COP', '2026-05-03');
+    expect(repo.upsertExpense).toHaveBeenCalledWith(exp);
+  });
+});
+
+describe('store — learnCategoryRule', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('normalizes merchant, calls repo.upsertCategoryRule, and updates state', async () => {
+    const repo = makeFakeRepo();
+    const fx = makeFakeFx(1);
+    const store = createCondorStore(repo, fx);
+    await store.getState().hydrate();
+
+    await store.getState().learnCategoryRule('  Súper Éxito ', 'preset-mercado');
+
+    expect(repo.upsertCategoryRule).toHaveBeenCalledWith(
+      expect.objectContaining({ pattern: 'SUPER EXITO', categoryId: 'preset-mercado' }),
+    );
+    const { categoryRules } = store.getState();
+    expect(categoryRules).toHaveLength(1);
+    expect(categoryRules[0]).toMatchObject({ pattern: 'SUPER EXITO', categoryId: 'preset-mercado' });
+  });
+});
+
+describe('store — learnCategoryRule id stability (no stale duplicate)', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('re-learning same merchant with a different category reuses the rule id and leaves exactly one row in the repo', async () => {
+    const repo = makeFakeRepo();
+    const fx = makeFakeFx(1);
+    const store = createCondorStore(repo, fx);
+    await store.getState().hydrate();
+
+    // First learn: UBER → preset-transporte
+    await store.getState().learnCategoryRule('UBER', 'preset-transporte');
+    const firstId = store.getState().categoryRules[0].id;
+
+    // Second learn: same merchant, different category
+    await store.getState().learnCategoryRule('UBER', 'preset-comida');
+
+    // After reload, repo must have exactly ONE rule
+    const repoRules = await repo.listCategoryRules();
+    expect(repoRules).toHaveLength(1);
+
+    // The surviving rule must point to the NEW category
+    expect(repoRules[0].categoryId).toBe('preset-comida');
+
+    // The id must be STABLE (same row replaced, not a new insert)
+    expect(repoRules[0].id).toBe(firstId);
+
+    // In-memory state must also be consistent
+    const stateRules = store.getState().categoryRules;
+    expect(stateRules).toHaveLength(1);
+    expect(stateRules[0].categoryId).toBe('preset-comida');
+    expect(stateRules[0].id).toBe(firstId);
+  });
+});
+
+describe('store — hydrate loads categoryRules', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('loads rules from repo into state on hydrate', async () => {
+    const fakeRule: CategoryRule = { id: 'rule-1', pattern: 'WALMART', categoryId: 'preset-mercado' };
+    // Pre-seed the fake repo's rules via learnCategoryRule after hydrate on a throw-away store
+    const repo = makeFakeRepo();
+    const fx = makeFakeFx(1);
+    // Seed directly by calling upsertCategoryRule on the fake repo
+    await repo.upsertCategoryRule(fakeRule);
+
+    const store = createCondorStore(repo, fx);
+    await store.getState().hydrate();
+
+    const { categoryRules } = store.getState();
+    expect(categoryRules).toHaveLength(1);
+    expect(categoryRules[0]).toMatchObject({ pattern: 'WALMART', categoryId: 'preset-mercado' });
   });
 });

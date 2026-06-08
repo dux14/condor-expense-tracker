@@ -1,5 +1,5 @@
 import type { Repository } from '@/lib/data/repository';
-import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 import { PRESET_CATEGORIES } from '@/lib/domain/presets';
 import { DEFAULT_SETTINGS } from '@/lib/data/local-storage-repository';
@@ -12,6 +12,7 @@ import { DEFAULT_SETTINGS } from '@/lib/data/local-storage-repository';
 export class FakeRemoteRepository implements Repository {
   expenses: Expense[] = [];
   categories: Category[] = [...PRESET_CATEGORIES];
+  rules: CategoryRule[] = [];
   settings: Settings = { ...DEFAULT_SETTINGS };
 
   async listExpenses(): Promise<Expense[]> { return this.expenses.map(e => ({ ...e })); }
@@ -37,6 +38,12 @@ export class FakeRemoteRepository implements Repository {
     }
     this.categories = this.categories.filter(x => x.id !== id);
   }
+  async listCategoryRules(): Promise<CategoryRule[]> { return this.rules.map(r => ({ ...r })); }
+  async upsertCategoryRule(r: CategoryRule): Promise<CategoryRule> {
+    const i = this.rules.findIndex(x => x.id === r.id);
+    if (i >= 0) this.rules[i] = { ...r }; else this.rules.push({ ...r });
+    return { ...r };
+  }
   async getSettings(): Promise<Settings> { return { ...this.settings }; }
   async putSettings(s: Settings): Promise<Settings> { this.settings = { ...s }; return { ...s }; }
   async exportAll(): Promise<ExportBundle> {
@@ -51,6 +58,7 @@ export class FakeRemoteRepository implements Repository {
   async wipeAll(): Promise<void> {
     this.expenses = [];
     this.categories = [...PRESET_CATEGORIES];
+    this.rules = [];
     this.settings = { ...DEFAULT_SETTINGS };
   }
 }
@@ -71,6 +79,8 @@ export function offlineGate(remote: Repository): {
     listCategories: () => guard(() => remote.listCategories()),
     upsertCategory: (c) => guard(() => remote.upsertCategory(c)),
     deleteCategory: (id, r) => guard(() => remote.deleteCategory(id, r)),
+    listCategoryRules: () => guard(() => remote.listCategoryRules()),
+    upsertCategoryRule: (r) => guard(() => remote.upsertCategoryRule(r)),
     getSettings: () => guard(() => remote.getSettings()),
     putSettings: (s) => guard(() => remote.putSettings(s)),
     exportAll: () => guard(() => remote.exportAll()),

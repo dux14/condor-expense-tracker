@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { ChevronLeft, Download, Trash2 } from 'lucide-react'
+import { ChevronLeft, Download, FileUp, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useCondorStore } from '@/lib/store/store'
@@ -226,6 +226,16 @@ export default function AjustesPage() {
             {t('data')}
           </p>
           <div className="overflow-hidden rounded-[12px] bg-surface">
+
+            {/* Import */}
+            <SettingRow
+              label={t('importStatement')}
+              onPress={() => router.push('/importar')}
+            >
+              <FileUp size={18} className="text-muted-txt" />
+            </SettingRow>
+
+            <div className="mx-4 h-px bg-outline/40" />
 
             {/* Export */}
             <SettingRow

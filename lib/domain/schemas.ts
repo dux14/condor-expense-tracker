@@ -35,7 +35,7 @@ export const expenseSchema = z.object({
   categoryId: z.string(),
   merchant: z.string().optional(),
   note: z.string().optional(),
-  source: z.literal('manual'),
+  source: z.enum(['manual', 'import']),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -64,6 +64,16 @@ export const exportBundleSchema = z.object({
   categories: z.array(categorySchema),
   settings: settingsSchema,
 });
+
+export const categoryRuleSchema = z.object({
+  id: z.string(),
+  pattern: z.string().min(1),
+  categoryId: z.string().min(1),
+});
+
+export function parseCategoryRule(input: unknown): import('./types').CategoryRule {
+  return categoryRuleSchema.parse(input);
+}
 
 /**
  * Validates and parses an Expense input.

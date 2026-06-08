@@ -1,4 +1,4 @@
-import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 import { PRESET_CATEGORIES } from '@/lib/domain/presets';
 import type { Repository } from './repository';
@@ -9,6 +9,7 @@ const KEYS = {
   expenses: 'condor:expenses',
   categories: 'condor:categories',
   settings: 'condor:settings',
+  rules: 'condor:rules',
 } as const;
 
 // ---- Defaults ------------------------------------------------------------
@@ -121,6 +122,21 @@ export class LocalStorageRepository implements Repository {
     }
 
     write(KEYS.categories, list.filter(x => x.id !== id));
+  }
+
+  // ---- CategoryRules -----------------------------------------------------
+
+  async listCategoryRules(): Promise<CategoryRule[]> {
+    return read<CategoryRule[]>(KEYS.rules, []);
+  }
+
+  async upsertCategoryRule(r: CategoryRule): Promise<CategoryRule> {
+    if (isUnavailable()) return r;
+    const list = await this.listCategoryRules();
+    const idx = list.findIndex((x) => x.id === r.id);
+    if (idx >= 0) list[idx] = r; else list.push(r);
+    write(KEYS.rules, list);
+    return r;
   }
 
   // ---- Settings ----------------------------------------------------------

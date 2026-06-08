@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 import { PRESET_CATEGORIES } from '@/lib/domain/presets';
 import { DEFAULT_SETTINGS } from './local-storage-repository';
@@ -8,7 +8,9 @@ import {
   expenseToRow, rowToExpense,
   categoryToRow, rowToCategory,
   settingsToRow, rowToSettings,
+  categoryRuleToRow, rowToCategoryRule,
 } from './supabase-mappers';
+import type { CategoryRuleRow } from './supabase-mappers';
 
 // Seeding: preset categories are inserted app-side on the first listCategories()
 // when the user has zero rows. See plan Task 4 for the rationale (testability,
@@ -74,6 +76,21 @@ export class SupabaseRepository implements Repository {
       p_reassign_to: reassignTo ?? null,
     });
     if (error) throw error; // RPC raises on preset / not-found — surfaces as error
+  }
+
+  // ---- CategoryRules -----------------------------------------------------
+  async listCategoryRules(): Promise<CategoryRule[]> {
+    const { data, error } = await this.sb.from('category_rules').select('*');
+    if (error) throw error;
+    return (data as CategoryRuleRow[] ?? []).map(rowToCategoryRule);
+  }
+
+  async upsertCategoryRule(r: CategoryRule): Promise<CategoryRule> {
+    const { error } = await this.sb
+      .from('category_rules')
+      .upsert(categoryRuleToRow(r), { onConflict: 'user_id,id' });
+    if (error) throw error;
+    return r;
   }
 
   // ---- Settings ----------------------------------------------------------
