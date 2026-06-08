@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createCondorStore } from '@/lib/store/store';
 import type { Repository } from '@/lib/data/repository';
 import type { FxProvider } from '@/lib/fx/fx-provider';
-import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 import { DEFAULT_SETTINGS } from '@/lib/data/local-storage-repository';
 import { PRESET_CATEGORIES, OTROS_ID } from '@/lib/domain/presets';
@@ -17,6 +17,7 @@ function makeFakeRepo(initial?: {
 }): Repository {
   let expenses: Expense[] = initial?.expenses ? [...initial.expenses] : [];
   let categories: Category[] = initial?.categories ? [...initial.categories] : [...PRESET_CATEGORIES];
+  let rules: CategoryRule[] = [];
   let settings: Settings = initial?.settings ? { ...initial.settings } : { ...DEFAULT_SETTINGS };
 
   return {
@@ -52,9 +53,16 @@ function makeFakeRepo(initial?: {
       categories: [...categories],
       settings: { ...settings },
     })),
+    listCategoryRules: vi.fn(async (): Promise<CategoryRule[]> => [...rules]),
+    upsertCategoryRule: vi.fn(async (r: CategoryRule) => {
+      const i = rules.findIndex(x => x.id === r.id);
+      if (i >= 0) rules[i] = r; else rules.push(r);
+      return r;
+    }),
     wipeAll: vi.fn(async () => {
       expenses = [];
       categories = [...PRESET_CATEGORIES];
+      rules = [];
       settings = { ...DEFAULT_SETTINGS };
     }),
   };

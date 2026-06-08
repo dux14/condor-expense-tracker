@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { LocalStorageRepository, DEFAULT_SETTINGS } from '@/lib/data/local-storage-repository';
 import { PRESET_CATEGORIES } from '@/lib/domain/presets';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
-import type { Expense, Category } from '@/lib/domain/types';
+import type { Expense, Category, CategoryRule } from '@/lib/domain/types';
 
 // Helper to create a minimal valid Expense
 function makeExpense(overrides: Partial<Expense> = {}): Expense {
@@ -17,6 +17,16 @@ function makeExpense(overrides: Partial<Expense> = {}): Expense {
     source: 'manual',
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
+// Helper to create a minimal valid CategoryRule
+function makeRule(overrides: Partial<CategoryRule> = {}): CategoryRule {
+  return {
+    id: 'r1',
+    pattern: 'UBER',
+    categoryId: 'preset-transporte',
     ...overrides,
   };
 }
@@ -247,6 +257,35 @@ describe('LocalStorageRepository', () => {
     });
   });
 
+  // ---- CategoryRules ----
+
+  describe('categoryRules', () => {
+    it('listCategoryRules returns [] on empty storage', async () => {
+      expect(await repo.listCategoryRules()).toEqual([]);
+    });
+
+    it('upsertCategoryRule persists a rule and listCategoryRules returns it', async () => {
+      const r = makeRule();
+      const returned = await repo.upsertCategoryRule(r);
+      expect(returned).toEqual(r);
+      expect(await repo.listCategoryRules()).toEqual([r]);
+    });
+
+    it('upserting same id replaces (no duplicate)', async () => {
+      await repo.upsertCategoryRule(makeRule({ id: 'r1', pattern: 'UBER' }));
+      await repo.upsertCategoryRule(makeRule({ id: 'r1', pattern: 'UBER_EATS' }));
+      const list = await repo.listCategoryRules();
+      expect(list).toHaveLength(1);
+      expect(list[0].pattern).toBe('UBER_EATS');
+    });
+
+    it('upserting a different id appends', async () => {
+      await repo.upsertCategoryRule(makeRule({ id: 'r1' }));
+      await repo.upsertCategoryRule(makeRule({ id: 'r2', pattern: 'RAPPI' }));
+      expect(await repo.listCategoryRules()).toHaveLength(2);
+    });
+  });
+
   // ---- wipeAll ----
 
   describe('wipeAll', () => {
@@ -274,6 +313,12 @@ describe('LocalStorageRepository', () => {
       await repo.wipeAll();
       expect(await repo.listExpenses()).toEqual([]);
       expect(await repo.getSettings()).toEqual(DEFAULT_SETTINGS);
+    });
+
+    it('wipeAll clears category rules too', async () => {
+      await repo.upsertCategoryRule(makeRule());
+      await repo.wipeAll();
+      expect(await repo.listCategoryRules()).toEqual([]);
     });
   });
 });

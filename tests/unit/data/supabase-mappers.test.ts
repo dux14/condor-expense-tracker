@@ -6,9 +6,11 @@ import {
   rowToCategory,
   settingsToRow,
   rowToSettings,
+  categoryRuleToRow,
+  rowToCategoryRule,
 } from '@/lib/data/supabase-mappers';
-import type { ExpenseRow, CategoryRow, SettingsRow } from '@/lib/data/supabase-mappers';
-import type { Expense, Category, Settings } from '@/lib/domain/types';
+import type { ExpenseRow, CategoryRow, SettingsRow, CategoryRuleRow } from '@/lib/data/supabase-mappers';
+import type { Expense, Category, Settings, CategoryRule } from '@/lib/domain/types';
 import { PRESET_CATEGORIES } from '@/lib/domain/presets';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -382,5 +384,47 @@ describe('ExpenseRow type', () => {
     expect(typeof row.fx_rate).toBe('number');
     expect(typeof row.created_at).toBe('string');
     expect(typeof row.updated_at).toBe('string');
+  });
+});
+
+// ── categoryRuleToRow ─────────────────────────────────────────────────────────
+
+describe('categoryRuleToRow', () => {
+  it('maps categoryId → category_id and omits user_id', () => {
+    const rule: CategoryRule = { id: 'r1', pattern: 'UBER', categoryId: 'preset-transporte' };
+    const row = categoryRuleToRow(rule);
+    expect(row).toEqual({ id: 'r1', pattern: 'UBER', category_id: 'preset-transporte' });
+    expect('user_id' in row).toBe(false);
+  });
+
+  it('does NOT include created_at or updated_at', () => {
+    const rule: CategoryRule = { id: 'r1', pattern: 'UBER', categoryId: 'preset-transporte' };
+    const row = categoryRuleToRow(rule);
+    expect('created_at' in row).toBe(false);
+    expect('updated_at' in row).toBe(false);
+  });
+});
+
+// ── rowToCategoryRule ─────────────────────────────────────────────────────────
+
+describe('rowToCategoryRule', () => {
+  it('maps category_id → categoryId (exact inverse of categoryRuleToRow)', () => {
+    const rule: CategoryRule = { id: 'r1', pattern: 'UBER', categoryId: 'preset-transporte' };
+    const row = categoryRuleToRow(rule);
+    const recovered = rowToCategoryRule(row);
+    expect(recovered).toEqual(rule);
+  });
+
+  it('drops created_at and updated_at from the row', () => {
+    const row: CategoryRuleRow = {
+      id: 'r1',
+      pattern: 'UBER',
+      category_id: 'preset-transporte',
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z',
+    };
+    const rule = rowToCategoryRule(row);
+    expect('created_at' in rule).toBe(false);
+    expect('updated_at' in rule).toBe(false);
   });
 });

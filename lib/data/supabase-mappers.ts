@@ -8,7 +8,7 @@
  * No Supabase client, no network, no side-effects.
  */
 
-import type { Expense, Category, Settings } from '@/lib/domain/types';
+import type { Expense, Category, Settings, CategoryRule } from '@/lib/domain/types';
 
 // ── Row Types ─────────────────────────────────────────────────────────────────
 // user_id is server-injected (auth.uid() default) and never appears in client
@@ -45,6 +45,14 @@ export interface SettingsRow {
   theme: string;
   dashboard_view: string;
   schema_version: number;
+}
+
+export interface CategoryRuleRow {
+  id: string;
+  pattern: string;
+  category_id: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // ── Expense mappers ───────────────────────────────────────────────────────────
@@ -146,3 +154,17 @@ export function rowToSettings(row: SettingsRow): Settings {
     schemaVersion: row.schema_version,
   };
 }
+
+// ── CategoryRule mappers ──────────────────────────────────────────────────────
+
+export const categoryRuleToRow = (r: CategoryRule): Omit<CategoryRuleRow, 'created_at' | 'updated_at'> => ({
+  id: r.id,
+  pattern: r.pattern,
+  category_id: r.categoryId,
+});
+
+export const rowToCategoryRule = (row: CategoryRuleRow): CategoryRule => ({
+  id: row.id,
+  pattern: row.pattern,
+  categoryId: row.category_id,
+});

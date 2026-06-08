@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LocalStorageRepository } from '@/lib/data/local-storage-repository';
 import { hasLocalDataToImport, importLocalToCloud } from '@/lib/data/import-local';
 import type { Repository } from '@/lib/data/repository';
-import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 
 // ---- Helpers ---------------------------------------------------------------
@@ -39,6 +39,7 @@ function makeSettings(overrides: Partial<Settings> = {}): Settings {
 class FakeCloudRepository implements Repository {
   private expenses: Expense[] = [];
   private categories: Category[] = [];
+  private rules: CategoryRule[] = [];
   private settings: Settings = {
     baseCurrency: 'COP',
     locale: 'es',
@@ -71,6 +72,12 @@ class FakeCloudRepository implements Repository {
   async listExpenses(): Promise<Expense[]> { return [...this.expenses]; }
   async deleteExpense(_id: string): Promise<void> {}
   async deleteCategory(_id: string, _reassignTo?: string): Promise<void> {}
+  async listCategoryRules(): Promise<CategoryRule[]> { return [...this.rules]; }
+  async upsertCategoryRule(r: CategoryRule): Promise<CategoryRule> {
+    const i = this.rules.findIndex(x => x.id === r.id);
+    if (i >= 0) this.rules[i] = r; else this.rules.push(r);
+    return r;
+  }
   async getSettings(): Promise<Settings> { return { ...this.settings }; }
 
   async exportAll(): Promise<ExportBundle> {

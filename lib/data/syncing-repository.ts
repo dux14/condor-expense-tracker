@@ -16,7 +16,7 @@
 // tombstone (legitimate re-create wins → tombstone dropped, row restored).
 
 import type { Repository } from './repository';
-import type { Expense, Category, Settings, ExportBundle } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
 import { SyncQueue, type OutboxEntity } from './sync-queue';
 import { TombstoneStore } from './tombstones';
 import { SyncTimeStore } from './synctimes';
@@ -86,6 +86,7 @@ export class SyncingRepository implements Repository {
   // ---- reads: local cache, instant --------------------------------------
   listExpenses(): Promise<Expense[]> { return this.local.listExpenses(); }
   listCategories(): Promise<Category[]> { return this.local.listCategories(); }
+  listCategoryRules(): Promise<CategoryRule[]> { return this.local.listCategoryRules(); }
   getSettings(): Promise<Settings> { return this.local.getSettings(); }
   exportAll(): Promise<ExportBundle> { return this.local.exportAll(); }
 
@@ -130,6 +131,16 @@ export class SyncingRepository implements Repository {
     const at = nowISO();
     this.synctimes.set('settings', 'settings', at);
     this.queue.enqueue({ op: 'upsert', entity: 'settings', id: 'settings', payload: saved, enqueuedAt: at });
+    this.emitWrite();
+    return saved;
+  }
+
+  async upsertCategoryRule(r: CategoryRule): Promise<CategoryRule> {
+    const saved = await this.local.upsertCategoryRule(r);
+    const at = nowISO();
+    this.tombstones.remove('rule', r.id);
+    this.synctimes.set('rule', r.id, at);
+    this.queue.enqueue({ op: 'upsert', entity: 'rule', id: r.id, payload: saved, enqueuedAt: at });
     this.emitWrite();
     return saved;
   }
@@ -188,7 +199,8 @@ export class SyncingRepository implements Repository {
       case 'expense':   return (await this.remote.listExpenses()).find(e => e.id === id) ?? null;
       case 'category':  return (await this.remote.listCategories()).find(c => c.id === id) ?? null;
       case 'settings':  return await this.remote.getSettings();
-      default:          return null; // budget/rule: F8/F6 add remote methods
+      case 'rule':      return (await this.remote.listCategoryRules()).find(r => r.id === id) ?? null;
+      default:          return null; // budget: F8 adds remote methods
     }
   }
 
@@ -197,6 +209,7 @@ export class SyncingRepository implements Repository {
       case 'expense':  await this.remote.upsertExpense(payload as Expense); break;
       case 'category': await this.remote.upsertCategory(payload as Category); break;
       case 'settings': await this.remote.putSettings(payload as Settings); break;
+      case 'rule':     await this.remote.upsertCategoryRule(payload as CategoryRule); break;
       default: break;
     }
   }
@@ -206,6 +219,7 @@ export class SyncingRepository implements Repository {
       case 'expense':  await this.local.upsertExpense(record as Expense); break;
       case 'category': await this.local.upsertCategory(record as Category); break;
       case 'settings': await this.local.putSettings(record as Settings); break;
+      case 'rule':     await this.local.upsertCategoryRule(record as CategoryRule); break;
       default: break;
     }
   }
@@ -222,9 +236,10 @@ export class SyncingRepository implements Repository {
   async pull(): Promise<void> {
     this.setStatus('syncing');
     try {
-      const [remoteExpenses, remoteCategories, remoteSettings] = await Promise.all([
+      const [remoteExpenses, remoteCategories, remoteRules, remoteSettings] = await Promise.all([
         this.remote.listExpenses(),
         this.remote.listCategories(),
+        this.remote.listCategoryRules(),
         this.remote.getSettings(),
       ]);
 
@@ -235,6 +250,10 @@ export class SyncingRepository implements Repository {
       await this.reconcile('category', remoteCategories, await this.local.listCategories(),
         r => r.id, // categories: no updatedAt → synctime path
         r => this.local.upsertCategory(r), id => this.local.deleteCategory(id));
+
+      await this.reconcile('rule', remoteRules, await this.local.listCategoryRules(),
+        r => r.id, // rules: no updatedAt → synctime path
+        r => this.local.upsertCategoryRule(r), async () => { /* rules have no delete op in F6 */ });
 
       // settings: singleton, LWW by synctime
       await this.reconcileSettings(remoteSettings);
