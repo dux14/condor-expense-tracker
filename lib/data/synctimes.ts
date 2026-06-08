@@ -3,8 +3,9 @@
 // WHY: Category and Settings have no `updatedAt` field (see lib/domain/types.ts).
 // Rather than mutate the domain/schema (which would ripple into F3 + every
 // test), F4 tracks a comparable ISO timestamp here, keyed by `${entity}:${id}`.
-// Expense/Budget/Rule carry their own updatedAt and do NOT need this map, but
-// SyncingRepository falls back to it uniformly when a record lacks updatedAt.
+// Expense/Budget carry their own updatedAt and do NOT need this map; Category,
+// Settings and CategoryRule lack it, so SyncingRepository falls back to this map
+// uniformly when a record lacks updatedAt.
 
 import type { OutboxEntity } from './sync-queue';
 

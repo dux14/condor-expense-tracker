@@ -7,9 +7,9 @@
 // delete tombstones so a stale remote copy cannot resurrect a deleted record.
 // The service worker is NOT involved — sync is purely application-level.
 //
-// LWW timestamp policy: Expense/Budget/Rule compare `updatedAt`; Category and
-// Settings (no updatedAt) compare the SyncTimeStore side-map. See the *Store
-// classes for the durable storage details.
+// LWW timestamp policy: Expense/Budget compare `updatedAt`; Category, Settings
+// and CategoryRule (no updatedAt) compare the SyncTimeStore side-map. See the
+// *Store classes for the durable storage details.
 //
 // Tombstone policy: delete → local delete + tombstone + enqueue delete. pull()
 // skips tombstoned ids UNLESS the remote row's timestamp is newer than the
@@ -33,9 +33,9 @@ function nowISO(): string {
  *
  * LIMITATION (F4, by design): the synctime side-map (`condor:synctimes`) is
  * DEVICE-LOCAL and never travels with the remote payload. So for entities
- * WITHOUT `updatedAt` (Category, Settings) a "remote" stamp is really this
- * device's own clock — true cross-device LWW is NOT achieved for them.
- * Practical effect: concurrent Category/Settings edits on two devices are not
+ * WITHOUT `updatedAt` (Category, Settings, CategoryRule) a "remote" stamp is
+ * really this device's own clock — true cross-device LWW is NOT achieved for
+ * them. Practical effect: concurrent Category/Settings edits on two devices are not
  * conflict-resolved by timestamp; the last device to pull adopts remote for
  * rows it lacks. This is the plan's accepted trade-off to keep F4 a pure
  * decorator (no domain-type / F3-schema change). When F3 adds `updated_at`
