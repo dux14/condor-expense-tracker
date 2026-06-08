@@ -58,6 +58,7 @@ export class SyncingRepository implements Repository {
   private synctimes = new SyncTimeStore();
   private status: SyncStatus = 'synced';
   private listeners = new Set<(s: SyncStatus) => void>();
+  private writeListeners = new Set<() => void>();
 
   constructor(
     private readonly local: Repository,
@@ -76,6 +77,12 @@ export class SyncingRepository implements Repository {
     for (const fn of this.listeners) fn(s);
   }
 
+  onWrite(fn: () => void): () => void {
+    this.writeListeners.add(fn);
+    return () => { this.writeListeners.delete(fn); };
+  }
+  private emitWrite(): void { for (const fn of this.writeListeners) fn(); }
+
   // ---- reads: local cache, instant --------------------------------------
   listExpenses(): Promise<Expense[]> { return this.local.listExpenses(); }
   listCategories(): Promise<Category[]> { return this.local.listCategories(); }
@@ -88,6 +95,7 @@ export class SyncingRepository implements Repository {
     this.tombstones.remove('expense', e.id);
     this.synctimes.set('expense', e.id, e.updatedAt);
     this.queue.enqueue({ op: 'upsert', entity: 'expense', id: e.id, payload: saved, enqueuedAt: e.updatedAt });
+    this.emitWrite();
     return saved;
   }
 
@@ -96,6 +104,7 @@ export class SyncingRepository implements Repository {
     const at = nowISO();
     this.tombstones.add('expense', id, at);
     this.queue.enqueue({ op: 'delete', entity: 'expense', id, payload: { id }, enqueuedAt: at });
+    this.emitWrite();
   }
 
   async upsertCategory(c: Category): Promise<Category> {
@@ -104,6 +113,7 @@ export class SyncingRepository implements Repository {
     this.tombstones.remove('category', c.id);
     this.synctimes.set('category', c.id, at);
     this.queue.enqueue({ op: 'upsert', entity: 'category', id: c.id, payload: saved, enqueuedAt: at });
+    this.emitWrite();
     return saved;
   }
 
@@ -112,6 +122,7 @@ export class SyncingRepository implements Repository {
     const at = nowISO();
     this.tombstones.add('category', id, at);
     this.queue.enqueue({ op: 'delete', entity: 'category', id, payload: { id, reassignTo }, enqueuedAt: at });
+    this.emitWrite();
   }
 
   async putSettings(s: Settings): Promise<Settings> {
@@ -119,6 +130,7 @@ export class SyncingRepository implements Repository {
     const at = nowISO();
     this.synctimes.set('settings', 'settings', at);
     this.queue.enqueue({ op: 'upsert', entity: 'settings', id: 'settings', payload: saved, enqueuedAt: at });
+    this.emitWrite();
     return saved;
   }
 
