@@ -117,4 +117,10 @@ Limits re-verified live **2026-06-09** (vercel.com/docs/limits + plans/hobby; su
 
 ## 6. Verification (suite + e2e green)
 
-TBD-measure
+Post-optimization verification (changes touched `public/sw.js`, `next.config.ts`; `middleware.ts` unchanged):
+- **Unit + integration suite:** `pnpm test` → **604 tests / 69 files passed, 0 failures** (2026-06-09, vitest 4.1.8, 14.9 s).
+- **Production build:** `pnpm build` → clean, 13 static pages, no new image/middleware/route warnings (only the pre-existing Next 16 `middleware → proxy` deprecation notice, unrelated to F11).
+- **End-to-end (`pnpm e2e`):** ⏳ **not run in this environment** — the Playwright `headless_shell` binary cannot install in the sandbox (documented in PENDIENTES, 2026-06-08). E2E runs in CI. Binding coverage for the touched surfaces is the unit/integration suite above (middleware-session gate 5/5; image config via build).
+- **PWA offline smoke (SW `CACHE_VER` bump):** ⏳ requires a real browser/device — to confirm on next manual pass: install/reload as PWA, toggle offline in devtools, verify `/login` + `/importar` load offline and **`condor-v3`** is the active cache (Application → Cache Storage). The bump guarantees clients re-precache; `node --check public/sw.js` passed.
+
+**Net F11 footprint:** 3 small verified changes (SW precache +2 routes & cache bump; `images.unoptimized` explicit) + this living audit doc. No functional regression in the 604-test suite.
