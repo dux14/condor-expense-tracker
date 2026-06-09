@@ -44,7 +44,15 @@ export default function RootLayout({
       className={`dark ${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       {/* pt: keep content clear of the iOS status bar / notch — viewport-fit=cover
-          extends the page under it (black-translucent standalone mode). */}
+          extends the page under it (black-translucent standalone mode).
+          SINGLE SOURCE OF TRUTH for the top safe-area inset: only <body> owns
+          env(safe-area-inset-top). Page headers must use plain design padding
+          (pt-4/pt-5) and must NOT add a second env(safe-area-inset-top) — doing
+          so double-pads under the notch. The only exceptions are full-screen
+          overlays rendered outside this <body> flow (LockScreen), which carry
+          their own inset. Bottom inset is owned additively: each page clears the
+          BottomNav rail (pb-calc(...+5.5rem); /anadir +2rem, no nav) and
+          BottomNav itself clears the home indicator (pb-env(safe-area-inset-bottom)). */}
       <body className="min-h-dvh bg-bg text-text pt-[env(safe-area-inset-top)]">
         <Providers>{children}</Providers>
       </body>

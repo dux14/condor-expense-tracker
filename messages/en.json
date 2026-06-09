@@ -37,7 +37,21 @@
     "budget_placeholder": "No budget",
     "budget_optional": "Optional",
     "spentOfBudget": "{spent} of {budget}",
-    "overBudget": "Over budget"
+    "overBudget": "Over budget",
+    "iconGroup": {
+      "food": "Food & drink",
+      "transport": "Transport",
+      "home": "Home",
+      "shopping": "Shopping",
+      "health": "Health",
+      "leisure": "Leisure",
+      "finance": "Finance",
+      "travel": "Travel",
+      "pets": "Pets",
+      "education": "Education",
+      "tech": "Tech",
+      "other": "Other"
+    }
   },
   "Nav": {
     "home": "Home",
