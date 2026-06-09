@@ -59,6 +59,8 @@ function makeFakeRepo(initial?: {
       exportedAt: new Date().toISOString(),
       expenses: [...expenses],
       categories: [...categories],
+      budgets: [...budgets],
+      categoryRules: [...rules],
       settings: { ...settings },
     })),
     listCategoryRules: vi.fn(async (): Promise<CategoryRule[]> => [...rules]),

@@ -159,7 +159,12 @@
     "signedInAs": "Sesión iniciada como",
     "signOut": "Cerrar sesión",
     "signingOut": "Cerrando sesión…",
-    "signOutError": "No se pudo cerrar sesión."
+    "signOutError": "No se pudo cerrar sesión.",
+    "deleteAccount": "Eliminar cuenta",
+    "deleteAccountConfirmTitle": "¿Eliminar tu cuenta?",
+    "deleteAccountConfirm": "Esto borrará permanentemente tu cuenta y todos tus datos. No se puede deshacer.",
+    "deletingAccount": "Eliminando cuenta…",
+    "deleteAccountError": "No se pudo eliminar la cuenta. Inténtalo de nuevo."
   },
   "Anadir": {
     "titleAdd": "Añadir gasto",

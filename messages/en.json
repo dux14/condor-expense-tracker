@@ -159,7 +159,12 @@
     "signedInAs": "Signed in as",
     "signOut": "Sign out",
     "signingOut": "Signing out…",
-    "signOutError": "Could not sign out."
+    "signOutError": "Could not sign out.",
+    "deleteAccount": "Delete account",
+    "deleteAccountConfirmTitle": "Delete your account?",
+    "deleteAccountConfirm": "This permanently deletes your account and all your data. This cannot be undone.",
+    "deletingAccount": "Deleting account…",
+    "deleteAccountError": "Could not delete the account. Please try again."
   },
   "Anadir": {
     "titleAdd": "Add expense",

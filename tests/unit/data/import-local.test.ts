@@ -94,6 +94,8 @@ class FakeCloudRepository implements Repository {
       exportedAt: new Date().toISOString(),
       expenses: [...this.expenses],
       categories: [...this.categories],
+      budgets: [...this.budgets],
+      categoryRules: [...this.rules],
       settings: { ...this.settings },
     };
   }

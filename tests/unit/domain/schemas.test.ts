@@ -127,6 +127,8 @@ describe('exportBundleSchema', () => {
       exportedAt: '2026-06-01T12:00:00.000Z',
       expenses: [validExpense],
       categories: [validCategory],
+      budgets: [],
+      categoryRules: [],
       settings: validSettings,
     };
     const result = exportBundleSchema.safeParse(bundle);

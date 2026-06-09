@@ -52,6 +52,8 @@ export interface ExportBundle {
   exportedAt: string;
   expenses: Expense[];
   categories: Category[];
+  budgets: Budget[];
+  categoryRules: CategoryRule[];
   settings: Settings;
 }
 
