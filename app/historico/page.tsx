@@ -9,6 +9,7 @@ import { es, enUS } from 'date-fns/locale'
 
 import { useCondorStore } from '@/lib/store/store'
 import { transactionsByDay } from '@/lib/domain/selectors'
+import { detectAnomalies } from '@/lib/domain/trends'
 import type { Locale } from '@/lib/domain/types'
 
 import { BottomNav } from '@/components/nav/BottomNav'
@@ -61,6 +62,13 @@ function HistoricoContent() {
   }, [])
 
   const view = searchParams.get('view') === 'trends' ? 'trends' : 'transactions'
+
+  // Categories whose spend this month is flagged as anomalous
+  const anomalyCats = new Set(
+    detectAnomalies(expenses, month)
+      .filter((a) => a.status === 'emergencia')
+      .map((a) => a.categoryId),
+  )
 
   const catParam = searchParams.get('cat')
 
@@ -175,6 +183,7 @@ function HistoricoContent() {
                             category={category}
                             locale={locale}
                             baseCurrency={baseCurrency}
+                            isAnomaly={anomalyCats.has(expense.categoryId)}
                             onPress={() =>
                               router.push('/anadir?id=' + expense.id)
                             }
