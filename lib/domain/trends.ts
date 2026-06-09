@@ -58,3 +58,39 @@ export function monthOverMonth(
 
   return months.map((month) => ({ month, totalBase: totals.get(month) ?? 0 }))
 }
+
+// ---------------------------------------------------------------------------
+// categoryBaseline
+// ---------------------------------------------------------------------------
+
+export interface CategoryBaseline {
+  median: number // median of the trailing months that HAD spend (base currency)
+  mad: number // median absolute deviation of those same months
+  months: number // size of the trailing window when any spend exists, else 0
+}
+
+/**
+ * Trailing baseline for one category: median + MAD of the monthly base-currency
+ * spend over `trailingMonths` months ENDING the month BEFORE `anchorMonth`
+ * (the anchor is excluded so it can be compared against its own history).
+ *
+ * median/MAD are computed over ONLY the trailing months that actually had spend
+ * (totalBase > 0). A category that spends sporadically is therefore judged
+ * against "when it spends, how much" — so a flat 100/100/100 history yields
+ * MAD 0 (enabling the relative flat-history fallback in detectAnomalies),
+ * rather than being diluted by zero-spend months. With no spend at all the
+ * baseline is { median: 0, mad: 0, months: 0 }.
+ */
+export function categoryBaseline(
+  expenses: Expense[],
+  categoryId: string,
+  anchorMonth: string,
+  trailingMonths: number,
+): CategoryBaseline {
+  const window = Math.max(1, Math.floor(trailingMonths))
+  const prior = prevMonthKey(anchorMonth)
+  const series = monthOverMonth(expenses, categoryId, prior, window)
+  const spentMonths = series.map((p) => p.totalBase).filter((t) => t > 0)
+  if (spentMonths.length === 0) return { median: 0, mad: 0, months: 0 }
+  return { median: median(spentMonths), mad: mad(spentMonths), months: window }
+}

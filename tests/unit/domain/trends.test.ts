@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Expense } from '@/lib/domain/types'
-import { monthOverMonth } from '@/lib/domain/trends'
+import { monthOverMonth, categoryBaseline } from '@/lib/domain/trends'
 
 let _id = 0
 function makeExpense(p: Partial<Expense>): Expense {
@@ -72,5 +72,41 @@ describe('monthOverMonth', () => {
     expect(monthOverMonth([], null, '2026-06', 0)).toEqual([
       { month: '2026-06', totalBase: 0 },
     ])
+  })
+})
+
+describe('categoryBaseline', () => {
+  it('returns { median: 0, mad: 0, months: 0 } when no trailing history', () => {
+    expect(categoryBaseline([], 'cat-a', '2026-06', 6)).toEqual({
+      median: 0,
+      mad: 0,
+      months: 0,
+    })
+  })
+
+  it('computes median + MAD over the trailing months, excluding the anchor month', () => {
+    // trailing monthly totals for cat-a: Mar=100, Apr=100, May=100; Jun (anchor) excluded
+    const expenses = [
+      makeExpense({ date: '2026-03-05', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-04-05', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-05-05', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-06-05', baseAmount: 9999, categoryId: 'cat-a' }), // anchor, ignored
+    ]
+    const b = categoryBaseline(expenses, 'cat-a', '2026-06', 6)
+    expect(b.median).toBe(100)
+    expect(b.mad).toBe(0)
+    expect(b.months).toBe(6)
+  })
+
+  it('reflects spread via MAD', () => {
+    const expenses = [
+      makeExpense({ date: '2026-03-05', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-04-05', baseAmount: 200, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-05-05', baseAmount: 300, categoryId: 'cat-a' }),
+    ]
+    // trailing window of 3 ending May: [100,200,300] → median 200, MAD 100
+    const b = categoryBaseline(expenses, 'cat-a', '2026-06', 3)
+    expect(b.median).toBe(200)
+    expect(b.mad).toBe(100)
   })
 })
