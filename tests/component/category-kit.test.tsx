@@ -34,7 +34,6 @@ const messages = {
     budget_optional: 'Opcional',
     spentOfBudget: '{spent} de {budget}',
     overBudget: 'Sobre el presupuesto',
-    noBudget: 'Sin presupuesto',
   },
 }
 

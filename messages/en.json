@@ -37,8 +37,7 @@
     "budget_placeholder": "No budget",
     "budget_optional": "Optional",
     "spentOfBudget": "{spent} of {budget}",
-    "overBudget": "Over budget",
-    "noBudget": "No budget"
+    "overBudget": "Over budget"
   },
   "Nav": {
     "home": "Home",

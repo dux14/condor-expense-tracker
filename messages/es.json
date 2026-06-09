@@ -37,8 +37,7 @@
     "budget_placeholder": "Sin presupuesto",
     "budget_optional": "Opcional",
     "spentOfBudget": "{spent} de {budget}",
-    "overBudget": "Sobre el presupuesto",
-    "noBudget": "Sin presupuesto"
+    "overBudget": "Sobre el presupuesto"
   },
   "Nav": {
     "home": "Inicio",
