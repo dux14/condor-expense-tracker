@@ -64,7 +64,8 @@
     "whenSpent": "¿Cuándo gastaste?",
     "emptyTitle": "Sin gastos este mes",
     "emptyBody": "Registra tu primer gasto y empieza a ver tus patrones de consumo.",
-    "addFirst": "Añadir gasto"
+    "addFirst": "Añadir gasto",
+    "overBudget": "Sobre el presupuesto"
   },
   "Historico": {
     "title": "Histórico",

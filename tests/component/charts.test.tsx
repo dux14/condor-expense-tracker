@@ -173,6 +173,27 @@ describe('RankedBars', () => {
     expect(screen.queryByRole('button')).toBeNull()
     expect(onSelect).not.toHaveBeenCalled()
   })
+
+  it('RankedBars tints an over-budget category and labels it accessibly', () => {
+    const items: RankedItem[] = [
+      { categoryId: 'preset-comida', name: 'Comida', color: '#C9B6FF', icon: 'comida', totalBase: 180000, pct: 60 },
+      { categoryId: 'preset-transporte', name: 'Transporte', color: '#9AD', icon: 'transporte', totalBase: 50000, pct: 40 },
+    ]
+    render(withIntl(
+      <RankedBars items={items} baseCurrency="COP" locale="es"
+        overCategoryIds={new Set(['preset-comida'])} overLabel="Sobre el presupuesto" />,
+    ))
+    const overBtn = screen.getByTestId('ranked-bar-preset-comida')
+    expect(overBtn.getAttribute('aria-label')).toMatch(/sobre el presupuesto/i)
+    const okBtn = screen.getByTestId('ranked-bar-preset-transporte')
+    expect(okBtn.getAttribute('aria-label')).not.toMatch(/sobre el presupuesto/i)
+
+    // Verify visual over-budget cues are rendered on the over row and absent on the ok row
+    expect(overBtn.querySelector('.bg-danger')).not.toBeNull()
+    expect(okBtn.querySelector('.bg-danger')).toBeNull()
+    expect(overBtn.querySelector('svg')).not.toBeNull()
+    expect(okBtn.querySelector('svg')).toBeNull()
+  })
 })
 
 // ---------------------------------------------------------------------------

@@ -12,6 +12,7 @@ import {
   spendByDay,
   deltaVsPrevMonth,
   expensesInMonth,
+  budgetProgress,
 } from '@/lib/domain/selectors'
 import { formatMonthLabel, prevMonthKey } from '@/lib/format/date'
 
@@ -31,6 +32,7 @@ export default function InicioPage() {
 
   const expenses = useCondorStore((s) => s.expenses)
   const categories = useCondorStore((s) => s.categories)
+  const budgets = useCondorStore((s) => s.budgets)
   const settings = useCondorStore((s) => s.settings)
   const month = useCondorStore((s) => s.month)
   const setMonth = useCondorStore((s) => s.setMonth)
@@ -49,6 +51,12 @@ export default function InicioPage() {
 
   const monthExpenses = expensesInMonth(expenses, month)
   const isEmpty = monthExpenses.length === 0
+
+  const overByCat = new Set(
+    budgetProgress(expenses, budgets, month)
+      .filter((p) => p.over)
+      .map((p) => p.categoryId),
+  )
 
   return (
     <main className="min-h-dvh bg-bg pb-[calc(env(safe-area-inset-bottom)+5.5rem)]">
@@ -132,6 +140,8 @@ export default function InicioPage() {
               onSelectCategory={(id) =>
                 router.push('/historico?cat=' + id + '&m=' + month)
               }
+              overCategoryIds={overByCat}
+              overLabel={t('overBudget')}
               className="mb-6"
             />
 

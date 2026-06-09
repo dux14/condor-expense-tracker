@@ -15,6 +15,8 @@ interface SpendingViewProps {
   locale: Locale
   onSelectCategory?: (id: string) => void
   className?: string
+  overCategoryIds?: Set<string>
+  overLabel?: string
 }
 
 export function SpendingView({
@@ -25,6 +27,8 @@ export function SpendingView({
   locale,
   onSelectCategory,
   className,
+  overCategoryIds,
+  overLabel,
 }: SpendingViewProps) {
   return (
     <div className={cn('w-full', className)}>
@@ -34,6 +38,8 @@ export function SpendingView({
           baseCurrency={baseCurrency}
           locale={locale}
           onSelect={onSelectCategory}
+          overCategoryIds={overCategoryIds}
+          overLabel={overLabel}
         />
       )}
       {view === 'donut' && (

@@ -64,7 +64,8 @@
     "whenSpent": "When did you spend?",
     "emptyTitle": "No expenses this month",
     "emptyBody": "Log your first expense and start seeing your spending patterns.",
-    "addFirst": "Add expense"
+    "addFirst": "Add expense",
+    "overBudget": "Over budget"
   },
   "Historico": {
     "title": "History",
