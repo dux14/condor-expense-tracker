@@ -8,7 +8,7 @@
  * No Supabase client, no network, no side-effects.
  */
 
-import type { Expense, Category, Settings, CategoryRule } from '@/lib/domain/types';
+import type { Expense, Category, Settings, CategoryRule, Budget } from '@/lib/domain/types';
 
 // ── Row Types ─────────────────────────────────────────────────────────────────
 // user_id is server-injected (auth.uid() default) and never appears in client
@@ -168,3 +168,36 @@ export const rowToCategoryRule = (row: CategoryRuleRow): CategoryRule => ({
   pattern: row.pattern,
   categoryId: row.category_id,
 });
+
+// ── Budget mappers ────────────────────────────────────────────────────────────
+
+export interface BudgetRow {
+  id: string;
+  category_id: string;
+  amount_base: number;
+  period: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export function budgetToRow(b: Budget): BudgetRow {
+  return {
+    id: b.id,
+    category_id: b.categoryId,
+    amount_base: b.amountBase,
+    period: b.period,
+    created_at: b.createdAt,
+    updated_at: b.updatedAt,
+  };
+}
+
+export function rowToBudget(r: BudgetRow): Budget {
+  return {
+    id: r.id,
+    categoryId: r.category_id,
+    amountBase: r.amount_base,
+    period: r.period as Budget['period'],
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
