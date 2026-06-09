@@ -503,3 +503,66 @@ describe('store — hydrate loads categoryRules', () => {
     expect(categoryRules[0]).toMatchObject({ pattern: 'WALMART', categoryId: 'preset-mercado' });
   });
 });
+
+describe('budgets', () => {
+  beforeEach(() => { localStorage.clear(); });
+
+  it('hydrate loads budgets from the repo', async () => {
+    const b = { id: 'b1', categoryId: 'preset-comida', amountBase: 100, period: 'monthly' as const,
+      createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' };
+    const repo = makeFakeRepo();
+    await repo.upsertBudget(b);
+    const store = createCondorStore(repo, makeFakeFx(1));
+    await store.getState().hydrate();
+    expect(store.getState().budgets).toEqual([b]);
+  });
+
+  it('setBudget creates a budget for a category with none', async () => {
+    const repo = makeFakeRepo();
+    const store = createCondorStore(repo, makeFakeFx(1));
+    await store.getState().hydrate();
+    await store.getState().setBudget('preset-comida', 250000);
+    const budgets = store.getState().budgets;
+    expect(budgets).toHaveLength(1);
+    expect(budgets[0]).toMatchObject({ categoryId: 'preset-comida', amountBase: 250000, period: 'monthly' });
+    expect(repo.upsertBudget).toHaveBeenCalledTimes(1);
+  });
+
+  it('setBudget updates the existing budget for a category (no duplicate, new updatedAt)', async () => {
+    const repo = makeFakeRepo();
+    const store = createCondorStore(repo, makeFakeFx(1));
+    await store.getState().hydrate();
+    await store.getState().setBudget('preset-comida', 100);
+    const first = store.getState().budgets[0];
+    await store.getState().setBudget('preset-comida', 200);
+    const budgets = store.getState().budgets;
+    expect(budgets).toHaveLength(1);
+    expect(budgets[0].id).toBe(first.id);
+    expect(budgets[0].amountBase).toBe(200);
+    expect(budgets[0].updatedAt >= first.updatedAt).toBe(true);
+  });
+
+  it('deleteBudget removes the category budget and calls the repo', async () => {
+    const repo = makeFakeRepo();
+    const store = createCondorStore(repo, makeFakeFx(1));
+    await store.getState().hydrate();
+    await store.getState().setBudget('preset-comida', 100);
+    const id = store.getState().budgets[0].id;
+    await store.getState().deleteBudget('preset-comida');
+    expect(store.getState().budgets).toEqual([]);
+    expect(repo.deleteBudget).toHaveBeenCalledWith(id);
+  });
+
+  it('deleting a custom category also drops its budget (cleanup, not migration)', async () => {
+    const repo = makeFakeRepo();
+    const store = createCondorStore(repo, makeFakeFx(1));
+    await store.getState().hydrate();
+    await store.getState().addCategory({ name: 'Gym', color: '#fff', icon: 'comida' });
+    const custom = store.getState().categories.find((c) => c.name === 'Gym')!;
+    await store.getState().setBudget(custom.id, 50000);
+    expect(store.getState().budgets).toHaveLength(1);
+    await store.getState().deleteCategory(custom.id, OTROS_ID);
+    expect(store.getState().budgets).toEqual([]);
+    expect(repo.deleteBudget).toHaveBeenCalled();
+  });
+});

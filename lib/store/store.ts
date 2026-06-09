@@ -1,7 +1,7 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand/react';
-import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
-import { parseExpense } from '@/lib/domain/schemas';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule, Budget } from '@/lib/domain/types';
+import { parseExpense, parseBudget } from '@/lib/domain/schemas';
 import { roundToMinorUnits } from '@/lib/format/money';
 import { newId } from '@/lib/domain/ids';
 import type { Repository } from '@/lib/data/repository';
@@ -42,6 +42,7 @@ export interface CondorState {
   categories: Category[];
   settings: Settings;
   categoryRules: CategoryRule[];
+  budgets: Budget[];
   hydrated: boolean;
   month: string;
   // actions
@@ -82,6 +83,8 @@ export interface CondorState {
     note?: string;
   }): Promise<void>;
   learnCategoryRule(merchant: string, categoryId: string): Promise<void>;
+  setBudget(categoryId: string, amountBase: number): Promise<void>;
+  deleteBudget(categoryId: string): Promise<void>;
 }
 
 // ---------- Factory ----------------------------------------------------------
@@ -93,15 +96,17 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
     categories: [],
     settings: { ...DEFAULT_SETTINGS },
     categoryRules: [],
+    budgets: [],
     hydrated: false,
     month: todayMonthKey(),
 
     async hydrate() {
-      const [expenses, categories, rawSettings, categoryRules] = await Promise.all([
+      const [expenses, categories, rawSettings, categoryRules, budgets] = await Promise.all([
         repo.listExpenses(),
         repo.listCategories(),
         repo.getSettings(),
         repo.listCategoryRules(),
+        repo.listBudgets(),
       ]);
 
       const migrated = migrate({
@@ -128,6 +133,7 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
         categories: migrated.categories,
         settings: migrated.settings,
         categoryRules,
+        budgets,
         hydrated: true,
       });
     },
@@ -228,9 +234,16 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
     },
 
     async deleteCategory(id, reassignTo) {
-      const { categories, expenses } = get();
+      const { categories, expenses, budgets } = get();
       // repo.deleteCategory throws for presets and handles expense reassignment in storage
       await repo.deleteCategory(id, reassignTo);
+
+      // Cleanup: a custom category's budget is meaningless once the category is
+      // gone. We DELETE it (not migrate) — merging a cap into the reassign target
+      // would silently double/overwrite that target's own cap. Reassigned
+      // expenses still count toward the target's budget via budgetProgress.
+      const orphan = budgets.find((b) => b.categoryId === id);
+      if (orphan) await repo.deleteBudget(orphan.id);
 
       const nextExpenses = reassignTo !== undefined
         ? expenses.map(e => e.categoryId === id ? { ...e, categoryId: reassignTo } : e)
@@ -239,6 +252,7 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
       set({
         categories: categories.filter(c => c.id !== id),
         expenses: nextExpenses,
+        budgets: budgets.filter((b) => b.categoryId !== id),
       });
     },
 
@@ -281,7 +295,7 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
         repo.listCategories(),
         repo.getSettings(),
       ]);
-      set({ expenses: [], categories, settings, hydrated: true });
+      set({ expenses: [], categories, settings, budgets: [], hydrated: true });
     },
 
     async addImportedExpense(input) {
@@ -311,6 +325,30 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
       const next = [...categoryRules.filter((r) => r.pattern !== rule.pattern), rule];
       await repo.upsertCategoryRule(rule);
       set({ categoryRules: next });
+    },
+
+    async setBudget(categoryId, amountBase) {
+      const { budgets } = get();
+      const now = nowISO();
+      const existing = budgets.find((b) => b.categoryId === categoryId);
+      const budget: Budget = existing
+        ? { ...existing, amountBase, updatedAt: now }
+        : { id: newId(), categoryId, amountBase, period: 'monthly', createdAt: now, updatedAt: now };
+      parseBudget(budget); // throws on invalid (e.g. negative amount)
+      await repo.upsertBudget(budget);
+      set({
+        budgets: existing
+          ? budgets.map((b) => (b.id === budget.id ? budget : b))
+          : [...budgets, budget],
+      });
+    },
+
+    async deleteBudget(categoryId) {
+      const { budgets } = get();
+      const existing = budgets.find((b) => b.categoryId === categoryId);
+      if (!existing) return;
+      await repo.deleteBudget(existing.id);
+      set({ budgets: budgets.filter((b) => b.id !== existing.id) });
     },
 
     setRepo(next: Repository) { repo = next; },
