@@ -71,18 +71,22 @@ export const settingsSchema = z.object({
   schemaVersion: z.number(),
 });
 
+export const categoryRuleSchema = z.object({
+  id: z.string(),
+  pattern: z.string().min(1),
+  categoryId: z.string().min(1),
+});
+
 export const exportBundleSchema = z.object({
   schemaVersion: z.number(),
   exportedAt: z.string(),
   expenses: z.array(expenseSchema),
   categories: z.array(categorySchema),
+  // budgets + categoryRules added in F10; `.default([])` keeps importing a
+  // pre-F10 bundle (without these keys) backward-compatible.
+  budgets: z.array(budgetSchema).default([]),
+  categoryRules: z.array(categoryRuleSchema).default([]),
   settings: settingsSchema,
-});
-
-export const categoryRuleSchema = z.object({
-  id: z.string(),
-  pattern: z.string().min(1),
-  categoryId: z.string().min(1),
 });
 
 export function parseCategoryRule(input: unknown): import('./types').CategoryRule {

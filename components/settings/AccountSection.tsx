@@ -4,17 +4,21 @@ import * as React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { LogOut } from 'lucide-react';
+import { LogOut, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/lib/auth/use-session';
 import { createClient } from '@/lib/auth/supabase-browser';
+import { deleteAccount } from '@/lib/auth/delete-account';
+import { wipeLocalCache } from '@/lib/data/wipe-local-cache';
 import { SettingRow } from '@/components/settings/SettingRow';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
 export function AccountSection() {
   const t = useTranslations('Auth');
   const router = useRouter();
   const { user } = useSession();
   const [busy, setBusy] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   const name = (user?.user_metadata?.full_name as string | undefined) ?? '';
   const avatar = user?.user_metadata?.avatar_url as string | undefined;
@@ -28,9 +32,33 @@ export function AccountSection() {
       const supabase = createClient();
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      // Clear on-device data caches (preserving the app-lock config) so the
+      // next user on this device can't read the previous session's data.
+      wipeLocalCache();
       router.replace('/login');
     } catch {
       toast.error(t('signOutError'));
+      setBusy(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      // 1. Server is authoritative for the cloud: it deletes the user's rows
+      //    (scoped by the verified session user_id) BEFORE the auth account.
+      //    If it fails, nothing is destroyed locally yet — bail out.
+      await deleteAccount();
+      // 2. Account is gone — clear ALL local condor:* keys, including the lock.
+      //    (A client remote-wipe would fail anyway: the session is now invalid.)
+      wipeLocalCache({ keepLock: false });
+      // 3. End the (now invalid) session and leave.
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.replace('/login');
+    } catch {
+      toast.error(t('deleteAccountError'));
       setBusy(false);
     }
   }
@@ -79,7 +107,28 @@ export function AccountSection() {
         >
           <LogOut size={18} className="text-danger" />
         </SettingRow>
+
+        <div className="mx-4 h-px bg-outline/40" />
+
+        <SettingRow
+          label={busy ? t('deletingAccount') : t('deleteAccount')}
+          danger
+          onPress={() => { if (!busy) setDeleteOpen(true); }}
+          data-testid="delete-account-btn"
+        >
+          <Trash2 size={18} className="text-danger" />
+        </SettingRow>
       </div>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={t('deleteAccountConfirmTitle')}
+        description={t('deleteAccountConfirm')}
+        confirmLabel={t('deleteAccount')}
+        destructive
+        onConfirm={handleDeleteAccount}
+      />
     </section>
   );
 }

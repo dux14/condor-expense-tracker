@@ -137,9 +137,11 @@ export class SupabaseRepository implements Repository {
 
   // ---- Export ------------------------------------------------------------
   async exportAll(): Promise<ExportBundle> {
-    const [expenses, categories, settings] = await Promise.all([
+    const [expenses, categories, budgets, categoryRules, settings] = await Promise.all([
       this.listExpenses(),
       this.listCategories(),
+      this.listBudgets(),
+      this.listCategoryRules(),
       this.getSettings(),
     ]);
     return {
@@ -147,6 +149,8 @@ export class SupabaseRepository implements Repository {
       exportedAt: new Date().toISOString(),
       expenses,
       categories,
+      budgets,
+      categoryRules,
       settings,
     };
   }

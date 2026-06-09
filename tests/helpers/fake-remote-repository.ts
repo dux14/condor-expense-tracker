@@ -62,6 +62,8 @@ export class FakeRemoteRepository implements Repository {
       exportedAt: new Date().toISOString(),
       expenses: this.expenses.map(e => ({ ...e })),
       categories: this.categories.map(c => ({ ...c })),
+      budgets: this.budgets.map(b => ({ ...b })),
+      categoryRules: this.rules.map(r => ({ ...r })),
       settings: { ...this.settings },
     };
   }
