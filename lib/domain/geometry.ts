@@ -278,3 +278,32 @@ export function mad(values: number[]): number {
   const deviations = values.map((v) => Math.abs(v - m))
   return median(deviations)
 }
+
+// ---------------------------------------------------------------------------
+// linePoints
+// ---------------------------------------------------------------------------
+
+export interface Point {
+  x: number
+  y: number
+}
+
+/**
+ * Maps a value series to SVG points within [0,width] × [0,height].
+ * - x spread evenly across width (first at 0, last at width).
+ * - y inverted so the MAX value sits at the top (y=0) and MIN at the bottom.
+ * - Flat series (max === min) sits on the vertical midline.
+ * - Single value → one centered point. Empty → [].
+ */
+export function linePoints(values: number[], width: number, height: number): Point[] {
+  if (values.length === 0) return []
+  if (values.length === 1) return [{ x: 0, y: height / 2 }]
+  const max = Math.max(...values)
+  const min = Math.min(...values)
+  const span = max - min
+  const step = width / (values.length - 1)
+  return values.map((v, i) => ({
+    x: i * step,
+    y: span === 0 ? height / 2 : height - ((v - min) / span) * height,
+  }))
+}
