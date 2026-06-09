@@ -32,7 +32,13 @@
     "selectIcon": "Seleccionar ícono",
     "colorSwatch": "Color {hex}",
     "customColor": "Color personalizado",
-    "pickCustomColor": "Elegir color personalizado"
+    "pickCustomColor": "Elegir color personalizado",
+    "budget_label": "Presupuesto mensual",
+    "budget_placeholder": "Sin presupuesto",
+    "budget_optional": "Opcional",
+    "spentOfBudget": "{spent} de {budget}",
+    "overBudget": "Sobre el presupuesto",
+    "noBudget": "Sin presupuesto"
   },
   "Nav": {
     "home": "Inicio",

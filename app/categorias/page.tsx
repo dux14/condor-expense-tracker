@@ -27,6 +27,9 @@ export default function CategoriasPage() {
   const addCategory = useCondorStore((s) => s.addCategory)
   const updateCategory = useCondorStore((s) => s.updateCategory)
   const deleteCategory = useCondorStore((s) => s.deleteCategory)
+  const budgets = useCondorStore((s) => s.budgets)
+  const setBudget = useCondorStore((s) => s.setBudget)
+  const deleteBudget = useCondorStore((s) => s.deleteBudget)
 
   const { baseCurrency, locale } = settings
 
@@ -50,6 +53,7 @@ export default function CategoriasPage() {
     name: string
     color: string
     icon: string
+    budgetBase: number | null
   } | null>(null)
 
   // Delete dialog state
@@ -64,16 +68,23 @@ export default function CategoriasPage() {
   }
 
   function openEdit(cat: { id: string; name: string; color: string; icon: string }) {
-    setEditingCategory(cat)
+    setEditingCategory({
+      ...cat,
+      budgetBase: budgets.find((b) => b.categoryId === cat.id)?.amountBase ?? null,
+    })
     setSheetOpen(true)
   }
 
-  async function handleSheetSubmit(data: { name: string; color: string; icon: string }) {
+  async function handleSheetSubmit(data: { name: string; color: string; icon: string; budgetBase: number | null }) {
+    let categoryId: string
     if (editingCategory) {
-      await updateCategory(editingCategory.id, data)
+      await updateCategory(editingCategory.id, { name: data.name, color: data.color, icon: data.icon })
+      categoryId = editingCategory.id
     } else {
-      await addCategory(data)
+      categoryId = await addCategory({ name: data.name, color: data.color, icon: data.icon })
     }
+    if (data.budgetBase === null) await deleteBudget(categoryId)
+    else await setBudget(categoryId, data.budgetBase)
   }
 
   async function handleDeleteConfirm() {

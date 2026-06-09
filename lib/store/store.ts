@@ -62,7 +62,7 @@ export interface CondorState {
     patch: Partial<Pick<Expense, 'amount' | 'currency' | 'date' | 'time' | 'categoryId' | 'merchant' | 'note'>>,
   ): Promise<void>;
   deleteExpense(id: string): Promise<void>;
-  addCategory(input: { name: string; color: string; icon: string }): Promise<void>;
+  addCategory(input: { name: string; color: string; icon: string }): Promise<string>;
   updateCategory(
     id: string,
     patch: Partial<Pick<Category, 'name' | 'color' | 'icon' | 'hidden'>>,
@@ -222,6 +222,7 @@ export function createCondorStore(initialRepo: Repository, fx: FxProvider) {
       };
       await repo.upsertCategory(cat);
       set({ categories: [...categories, cat] });
+      return cat.id;
     },
 
     async updateCategory(id, patch) {
