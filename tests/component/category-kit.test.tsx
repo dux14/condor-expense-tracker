@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { CategoryChip } from '@/components/category/CategoryChip'
 import { ColorSwatchPicker } from '@/components/category/ColorSwatchPicker'
 import { NewCategorySheet } from '@/components/category/NewCategorySheet'
+import { BudgetProgressLine } from '@/components/category/BudgetProgressLine'
 import type { Category } from '@/lib/domain/types'
 import { CATEGORY_PALETTE } from '@/lib/domain/palette'
 
@@ -150,5 +151,23 @@ describe('NewCategorySheet budget field', () => {
         onSubmit={vi.fn()} />,
     ))
     expect(screen.getByLabelText(/presupuesto mensual/i)).toHaveValue('300000')
+  })
+})
+
+describe('BudgetProgressLine', () => {
+  it('renders spent/budget and pct, no over markers under budget', () => {
+    render(withIntl(
+      <BudgetProgressLine spentBase={50000} budgetBase={100000} pct={50} over={false} baseCurrency="COP" locale="es" />,
+    ))
+    expect(screen.getByText(/50%/)).toBeInTheDocument()
+    expect(screen.queryByText(/sobre el presupuesto/i)).not.toBeInTheDocument()
+  })
+
+  it('over budget exposes an accessible label and pct text (not color alone)', () => {
+    render(withIntl(
+      <BudgetProgressLine spentBase={180000} budgetBase={100000} pct={180} over baseCurrency="COP" locale="es" />,
+    ))
+    expect(screen.getByText(/180%/)).toBeInTheDocument()
+    expect(screen.getByText(/sobre el presupuesto/i)).toBeInTheDocument() // sr-only text present
   })
 })

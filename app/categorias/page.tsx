@@ -6,11 +6,12 @@ import { useTranslations } from 'next-intl'
 import { ChevronLeft, Pencil, Trash2, PlusCircle } from 'lucide-react'
 
 import { useCondorStore } from '@/lib/store/store'
-import { expensesInMonth } from '@/lib/domain/selectors'
+import { expensesInMonth, budgetProgress } from '@/lib/domain/selectors'
 import { CATEGORY_PALETTE } from '@/lib/domain/palette'
 import { OTROS_ID } from '@/lib/domain/presets'
 import { formatMoney } from '@/lib/format/money'
 import { CategoryListItem } from '@/components/category/CategoryListItem'
+import { BudgetProgressLine } from '@/components/category/BudgetProgressLine'
 import { NewCategorySheet } from '@/components/category/NewCategorySheet'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { BottomNav } from '@/components/nav/BottomNav'
@@ -41,6 +42,10 @@ export default function CategoriasPage() {
       .reduce((s, e) => s + (e.baseAmount ?? 0), 0)
     return formatMoney(sum, baseCurrency, locale)
   }
+
+  // Budget progress per category
+  const progress = budgetProgress(expenses, budgets, month)
+  const progressById = new Map(progress.map((p) => [p.categoryId, p]))
 
   // Split preset vs custom categories
   const presetCategories = categories.filter((c) => c.isPreset && !c.hidden)
@@ -132,6 +137,9 @@ export default function CategoriasPage() {
                   onPress={() =>
                     router.push('/historico?cat=' + cat.id + '&m=' + month)
                   }
+                  below={progressById.has(cat.id)
+                    ? <BudgetProgressLine {...progressById.get(cat.id)!} baseCurrency={baseCurrency} locale={locale} />
+                    : undefined}
                   actions={
                     <button
                       type="button"
@@ -169,6 +177,9 @@ export default function CategoriasPage() {
                     category={cat}
                     subtitle={totalById(cat.id)}
                     trailing="none"
+                    below={progressById.has(cat.id)
+                      ? <BudgetProgressLine {...progressById.get(cat.id)!} baseCurrency={baseCurrency} locale={locale} />
+                      : undefined}
                     actions={
                       <>
                         <button
