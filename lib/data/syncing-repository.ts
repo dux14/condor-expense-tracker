@@ -90,10 +90,25 @@ export class SyncingRepository implements Repository {
   getSettings(): Promise<Settings> { return this.local.getSettings(); }
   exportAll(): Promise<ExportBundle> { return this.local.exportAll(); }
 
-  // F8-TODO(Task 6): enqueue + flush + pull for budget entity
+  // ---- Budgets (LWW by updatedAt, like Expense) -------------------------
   listBudgets(): Promise<Budget[]> { return this.local.listBudgets(); }
-  upsertBudget(b: Budget): Promise<Budget> { return this.local.upsertBudget(b); }
-  deleteBudget(id: string): Promise<void> { return this.local.deleteBudget(id); }
+
+  async upsertBudget(b: Budget): Promise<Budget> {
+    const saved = await this.local.upsertBudget(b);
+    this.tombstones.remove('budget', b.id);
+    this.synctimes.set('budget', b.id, b.updatedAt);
+    this.queue.enqueue({ op: 'upsert', entity: 'budget', id: b.id, payload: saved, enqueuedAt: b.updatedAt });
+    this.emitWrite();
+    return saved;
+  }
+
+  async deleteBudget(id: string): Promise<void> {
+    await this.local.deleteBudget(id);
+    const at = nowISO();
+    this.tombstones.add('budget', id, at);
+    this.queue.enqueue({ op: 'delete', entity: 'budget', id, payload: { id }, enqueuedAt: at });
+    this.emitWrite();
+  }
 
   // ---- writes: local + enqueue ------------------------------------------
   async upsertExpense(e: Expense): Promise<Expense> {
@@ -205,7 +220,8 @@ export class SyncingRepository implements Repository {
       case 'category':  return (await this.remote.listCategories()).find(c => c.id === id) ?? null;
       case 'settings':  return await this.remote.getSettings();
       case 'rule':      return (await this.remote.listCategoryRules()).find(r => r.id === id) ?? null;
-      default:          return null; // budget: F8 adds remote methods
+      case 'budget':    return (await this.remote.listBudgets()).find((b) => b.id === id) ?? null;
+      default:          return null;
     }
   }
 
@@ -215,6 +231,7 @@ export class SyncingRepository implements Repository {
       case 'category': await this.remote.upsertCategory(payload as Category); break;
       case 'settings': await this.remote.putSettings(payload as Settings); break;
       case 'rule':     await this.remote.upsertCategoryRule(payload as CategoryRule); break;
+      case 'budget':   await this.remote.upsertBudget(payload as Budget); break;
       default: break;
     }
   }
@@ -225,6 +242,7 @@ export class SyncingRepository implements Repository {
       case 'category': await this.local.upsertCategory(record as Category); break;
       case 'settings': await this.local.putSettings(record as Settings); break;
       case 'rule':     await this.local.upsertCategoryRule(record as CategoryRule); break;
+      case 'budget':   await this.local.upsertBudget(record as Budget); break;
       default: break;
     }
   }
@@ -234,6 +252,7 @@ export class SyncingRepository implements Repository {
       case 'expense':  await this.remote.deleteExpense(id); break;
       case 'category': await this.remote.deleteCategory(id, extra?.reassignTo); break;
       case 'settings': break; // settings is never deleted
+      case 'budget':   await this.remote.deleteBudget(id); break;
       default: break;
     }
   }
@@ -241,11 +260,12 @@ export class SyncingRepository implements Repository {
   async pull(): Promise<void> {
     this.setStatus('syncing');
     try {
-      const [remoteExpenses, remoteCategories, remoteRules, remoteSettings] = await Promise.all([
+      const [remoteExpenses, remoteCategories, remoteRules, remoteSettings, remoteBudgets] = await Promise.all([
         this.remote.listExpenses(),
         this.remote.listCategories(),
         this.remote.listCategoryRules(),
         this.remote.getSettings(),
+        this.remote.listBudgets(),
       ]);
 
       await this.reconcile('expense', remoteExpenses, await this.local.listExpenses(),
@@ -259,6 +279,10 @@ export class SyncingRepository implements Repository {
       await this.reconcile('rule', remoteRules, await this.local.listCategoryRules(),
         r => r.id, // rules: no updatedAt → synctime path
         r => this.local.upsertCategoryRule(r), async () => { /* rules have no delete op in F6 */ });
+
+      await this.reconcile('budget', remoteBudgets, await this.local.listBudgets(),
+        r => r.id,
+        r => this.local.upsertBudget(r), id => this.local.deleteBudget(id));
 
       // settings: singleton, LWW by synctime
       await this.reconcileSettings(remoteSettings);

@@ -4,7 +4,7 @@ import { LocalStorageRepository } from '@/lib/data/local-storage-repository';
 import { SyncQueue } from '@/lib/data/sync-queue';
 import { TombstoneStore } from '@/lib/data/tombstones';
 import { FakeRemoteRepository, offlineGate } from '../../helpers/fake-remote-repository';
-import type { Expense } from '@/lib/domain/types';
+import type { Expense, Budget } from '@/lib/domain/types';
 
 function makeExpense(o: Partial<Expense> = {}): Expense {
   return {
@@ -270,5 +270,52 @@ describe('SyncingRepository — Category/Settings LWW is device-local (documente
     await sut.flush();
 
     expect(remote.categories.some(c => c.id === 'c1')).toBe(true);
+  });
+});
+
+function makeBudget(o: Partial<Budget> = {}): Budget {
+  return {
+    id: 'bud1', categoryId: 'preset-comida', amountBase: 100000, period: 'monthly' as const,
+    createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z', ...o,
+  };
+}
+
+describe('SyncingRepository — budgets', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('upsertBudget writes local and enqueues a budget upsert op', async () => {
+    const { repo } = makeSut();
+    await repo.upsertBudget(makeBudget({ id: 'b1' }));
+    expect((await repo.listBudgets()).map((b) => b.id)).toEqual(['b1']);
+    const ops = new SyncQueue().peekAll();
+    expect(ops.find((o) => o.entity === 'budget' && o.id === 'b1')).toMatchObject({ op: 'upsert' });
+  });
+
+  it('deleteBudget removes local, tombstones, and enqueues a delete op', async () => {
+    const { repo } = makeSut();
+    await repo.upsertBudget(makeBudget({ id: 'bgone' }));
+    await repo.deleteBudget('bgone');
+    expect(await repo.listBudgets()).toEqual([]);
+    expect(new TombstoneStore().isDeleted('budget', 'bgone')).toBe(true);
+    expect(new SyncQueue().peekAll().find((o) => o.op === 'delete' && o.entity === 'budget')).toBeTruthy();
+  });
+
+  it('flush pushes a queued budget upsert to remote (LWW by updatedAt)', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+    await sut.upsertBudget(makeBudget({ id: 'bf', amountBase: 777, updatedAt: '2026-03-01T00:00:00.000Z' }));
+    await sut.flush();
+    expect((await remote.listBudgets()).find((b) => b.id === 'bf')!.amountBase).toBe(777);
+    expect(new SyncQueue().peekAll()).toHaveLength(0);
+  });
+
+  it('pull brings a new remote budget into local', async () => {
+    const local = new LocalStorageRepository();
+    const remote = new FakeRemoteRepository();
+    const sut = new SyncingRepository(local, remote);
+    await remote.upsertBudget(makeBudget({ id: 'br' }));
+    await sut.pull();
+    expect((await sut.listBudgets()).map((b) => b.id)).toContain('br');
   });
 });
