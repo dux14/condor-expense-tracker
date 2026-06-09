@@ -463,4 +463,13 @@ describe('budget mappers', () => {
     const b = makeBudget();
     expect(rowToBudget(budgetToRow(b))).toEqual(b);
   });
+
+  it('rowToBudget normalizes timestamptz (+00:00) to canonical .000Z', () => {
+    const b = rowToBudget({
+      id: 'b9', category_id: 'preset-comida', amount_base: 100, period: 'monthly',
+      created_at: '2026-03-01T05:00:00+00:00', updated_at: '2026-03-02T05:00:00+00:00',
+    });
+    expect(b.createdAt).toBe('2026-03-01T05:00:00.000Z');
+    expect(b.updatedAt).toBe('2026-03-02T05:00:00.000Z');
+  });
 });

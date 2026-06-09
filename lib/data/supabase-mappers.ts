@@ -197,7 +197,7 @@ export function rowToBudget(r: BudgetRow): Budget {
     categoryId: r.category_id,
     amountBase: r.amount_base,
     period: r.period as Budget['period'],
-    createdAt: r.created_at,
-    updatedAt: r.updated_at,
+    createdAt: normTs(r.created_at),
+    updatedAt: normTs(r.updated_at),
   };
 }
