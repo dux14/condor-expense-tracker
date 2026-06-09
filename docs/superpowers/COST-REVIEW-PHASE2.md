@@ -58,7 +58,29 @@ _Profile: single/few users, personal finance PWA. Design recap: no LLM (D3), no 
 
 ## 3. Optimizations applied
 
-TBD-measure
+### 3.1 `/api/fx` cache hit ratio (verified, no change)
+- `app/api/fx/route.ts` emits `Cache-Control: public, max-age=86400, immutable` for a **resolved historical** rate and `no-store` otherwise (line 46–49). `public/sw.js` keeps `api.frankfurter.app` in `NEVER_CACHE` (the SW never caches the upstream FX host). Both confirmed correct — **no F5 change in F11**.
+- Live spot-check: `GET /api/fx?...` against prod returns **307 → /login** for an unauthenticated request (the session middleware intercepts and redirects before the handler runs). So the `x-vercel-cache` HIT/MISS shape can only be observed on an authorized (logged-in) request via devtools Network — recorded here as a known probe limitation, not a regression.
+- ⚠️ **Heritage smell (do NOT fix in F11):** the immutable response is marked `public` even though the route is auth-gated; a shared cache could in principle store a per-user value. Tracked as an F5 follow-up (already noted in PENDIENTES). Low impact (the value is a public FX rate, identical for all users), out of F11 scope.
+
+### 3.2 Service worker precache widened (applied — commit `b6cf5ac`)
+- `APP_SHELL` now precaches the **real shipped routes**: added `/login` (F1) and `/importar` (F6) to the existing `/`, `/anadir`, `/categorias`, `/ajustes`, `/historico` + manifest + brand/icon PNGs. No `/tendencias` route exists (F7 trends is a sub-view).
+- `CACHE_VER` bumped **`condor-v2` → `condor-v3`** so installed clients re-precache the new shell. `node --check public/sw.js` passes.
+- Effect: repeat visits to `/login` and `/importar` serve from the SW cache → fewer Fast-Data-Transfer bytes + edge requests hitting Vercel.
+
+### 3.3 Middleware matcher (verified already-tight, no change)
+- Matcher: `'/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|icon.png|apple-icon.png|brand/|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)'`
+- Already excludes `_next/*`, `sw.js`, `manifest.webmanifest`, `brand/`, and every image/font extension (which covers `/icons/*.png` via `.*\.png$`). **No gap found → no change.** `tests/unit/auth/middleware-session.test.ts` stays green (5/5). The matcher does not run on static assets, so it does not inflate edge-request count.
+
+### 3.4 Image optimizer disabled (applied — commit `b035fcc`)
+- `next.config.ts` now sets `images.unoptimized: true` explicitly, preserving `remotePatterns` (Google avatar host `lh3.googleusercontent.com`, mirrored in CSP `img-src`).
+- **Trade-off:** `next/image` now serves originals as-is (no WebP/AVIF re-encode, no per-viewport resize) — fine for the one hand-sized, pre-optimized logo (`CondorLogo.tsx → /brand/condor-mark.png`). Remote avatars still render (just not re-encoded); the initials fallback covers failure. This removes **all** Image-Optimization metering and sidesteps the Hobby cap entirely. Revisit only if the app later serves many large/remote images. `pnpm build` clean, 520 unit tests green.
+
+### 3.5 Bundle budget + static prerender
+- **Static/dynamic split** (Next 16 build): every page route — `/`, `/ajustes`, `/anadir`, `/categorias`, `/historico`, `/importar`, **`/login`** — is **○ Static (prerendered)**. Only `/api/fx`, `/api/account`, and `/auth/callback` are **ƒ Dynamic** (genuinely per-request). `/login` is static and gated by middleware, not by `force-dynamic` ✅ — keeps cheap pages off the function/CPU meters. No needless `force-dynamic` on pages.
+- **Lazy PDF parser confirmed:** `unpdf`/PDF.js appears only behind a dynamic `import()` (the sole static reference is a comment in `lib/import/pdf-text.ts`). On disk the heaviest chunk (≈472 KB gzip) is the PDF.js async chunk — loaded **only on demand at `/importar`**, NOT in any route's first load. D9/F6 budget held.
+- **First Load JS budget (⚠️ flagged, measurement caveat):** Next 16 + Turbopack **no longer prints the per-route First Load JS table** and emits no `app-build-manifest.json`, so the canonical number isn't directly readable. As a proxy, the **shared baseline** (`rootMainFiles` + polyfills, loaded on every route) gzips to **≈168 KB**, which is **over the Phase-1 target of < 120 KB**. Top offenders: framework/React (~69 KB gz), app runtime + Supabase auth client (~75 KB gz combined). pdfjs is correctly excluded.
+  - **Disposition:** this is a *flagged finding*, not an F11 fix. F11 is a cost audit + the SW/matcher/image levers; a bundle-size reduction is a separate effort. The cost dimension here is Fast Data Transfer, which (a) the SW precache mitigates for repeat visits and (b) is trivial in absolute terms for 1–few users (a 168 KB first paint a handful of times/day is nowhere near 100 GB/mo). **Follow-up:** run `@next/bundle-analyzer` for exact attribution and consider deferring the Supabase client off the shared baseline where feasible.
 
 ## 4. Free-tier thresholds & alerts
 
