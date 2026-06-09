@@ -16,7 +16,7 @@
 // tombstone (legitimate re-create wins → tombstone dropped, row restored).
 
 import type { Repository } from './repository';
-import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule, Budget } from '@/lib/domain/types';
 import { SyncQueue, type OutboxEntity } from './sync-queue';
 import { TombstoneStore } from './tombstones';
 import { SyncTimeStore } from './synctimes';
@@ -89,6 +89,11 @@ export class SyncingRepository implements Repository {
   listCategoryRules(): Promise<CategoryRule[]> { return this.local.listCategoryRules(); }
   getSettings(): Promise<Settings> { return this.local.getSettings(); }
   exportAll(): Promise<ExportBundle> { return this.local.exportAll(); }
+
+  // F8-TODO(Task 6): enqueue + flush + pull for budget entity
+  listBudgets(): Promise<Budget[]> { return this.local.listBudgets(); }
+  upsertBudget(b: Budget): Promise<Budget> { return this.local.upsertBudget(b); }
+  deleteBudget(id: string): Promise<void> { return this.local.deleteBudget(id); }
 
   // ---- writes: local + enqueue ------------------------------------------
   async upsertExpense(e: Expense): Promise<Expense> {

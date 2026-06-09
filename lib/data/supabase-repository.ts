@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule, Budget } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 import { PRESET_CATEGORIES } from '@/lib/domain/presets';
 import { DEFAULT_SETTINGS } from './local-storage-repository';
@@ -9,6 +9,7 @@ import {
   categoryToRow, rowToCategory,
   settingsToRow, rowToSettings,
   categoryRuleToRow, rowToCategoryRule,
+  budgetToRow, rowToBudget,
 } from './supabase-mappers';
 import type { CategoryRuleRow } from './supabase-mappers';
 
@@ -76,6 +77,26 @@ export class SupabaseRepository implements Repository {
       p_reassign_to: reassignTo ?? null,
     });
     if (error) throw error; // RPC raises on preset / not-found — surfaces as error
+  }
+
+  // ---- Budgets -----------------------------------------------------------
+  async listBudgets(): Promise<Budget[]> {
+    const { data, error } = await this.sb.from('budgets').select('*');
+    if (error) throw error;
+    return (data ?? []).map(rowToBudget);
+  }
+
+  async upsertBudget(b: Budget): Promise<Budget> {
+    const { error } = await this.sb
+      .from('budgets')
+      .upsert(budgetToRow(b), { onConflict: 'user_id,id' });
+    if (error) throw error;
+    return b;
+  }
+
+  async deleteBudget(id: string): Promise<void> {
+    const { error } = await this.sb.from('budgets').delete().eq('id', id);
+    if (error) throw error;
   }
 
   // ---- CategoryRules -----------------------------------------------------

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createCondorStore } from '@/lib/store/store';
 import type { Repository } from '@/lib/data/repository';
 import type { FxProvider } from '@/lib/fx/fx-provider';
-import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule, Budget } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 import { DEFAULT_SETTINGS } from '@/lib/data/local-storage-repository';
 import { PRESET_CATEGORIES, OTROS_ID } from '@/lib/domain/presets';
@@ -18,6 +18,7 @@ function makeFakeRepo(initial?: {
   let expenses: Expense[] = initial?.expenses ? [...initial.expenses] : [];
   let categories: Category[] = initial?.categories ? [...initial.categories] : [...PRESET_CATEGORIES];
   let rules: CategoryRule[] = [];
+  let budgets: Budget[] = [];
   let settings: Settings = initial?.settings ? { ...initial.settings } : { ...DEFAULT_SETTINGS };
 
   return {
@@ -44,6 +45,13 @@ function makeFakeRepo(initial?: {
       }
       categories = categories.filter(x => x.id !== id);
     }),
+    listBudgets: vi.fn(async () => [...budgets]),
+    upsertBudget: vi.fn(async (b: Budget) => {
+      const idx = budgets.findIndex((x) => x.id === b.id);
+      if (idx >= 0) budgets[idx] = b; else budgets.push(b);
+      return b;
+    }),
+    deleteBudget: vi.fn(async (id: string) => { budgets = budgets.filter((x) => x.id !== id); }),
     getSettings: vi.fn(async () => ({ ...settings })),
     putSettings: vi.fn(async (s: Settings) => { settings = { ...s }; return s; }),
     exportAll: vi.fn(async (): Promise<ExportBundle> => ({
@@ -63,6 +71,7 @@ function makeFakeRepo(initial?: {
       expenses = [];
       categories = [...PRESET_CATEGORIES];
       rules = [];
+      budgets = [];
       settings = { ...DEFAULT_SETTINGS };
     }),
   };
