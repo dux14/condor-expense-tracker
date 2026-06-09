@@ -84,11 +84,36 @@ _Profile: single/few users, personal finance PWA. Design recap: no LLM (D3), no 
 
 ## 4. Free-tier thresholds & alerts
 
-TBD-measure
+Limits re-verified live **2026-06-09** (vercel.com/docs/limits + plans/hobby; supabase.com/pricing + billing docs). **Watch line = 70 % of cap** — if a metric crosses it, act.
+
+| Platform | Metric | Free limit (verified 2026-06-09) | Current usage | Projection / headroom | 70 % watch line |
+|---|---|---|---|---|---|
+| Vercel Hobby | Function invocations / mo | **1,000,000** | ~0 (fresh deploy); only `/api/fx` + `/api/account` | trivial for 1–few users | 700,000 |
+| Vercel Hobby | Active CPU hrs / mo | **4** | ~0 | `/api/fx` + `/api/account` only, sub-second each | 2.8 hrs |
+| Vercel Hobby | Fast Data Transfer / mo | **100 GB** | few MB | SW precache cuts repeat fetches | 70 GB |
+| Vercel Hobby | Edge requests / mo | **1,000,000** | low | matcher excludes static assets | 700,000 |
+| Vercel Hobby | Image Optimization | **metered/capped** | **~0** | N/A — `unoptimized: true` (§3.4) | n/a (disabled) |
+| Supabase Free | DB size | **500 MB** | ~12–15 MB (schema 12 MB + tiny ledger) | grows slowly w/ `fx_rates` + ledger | 350 MB |
+| Supabase Free | DB egress / mo | **5 GB** | few MB | single user, small responses | 3.5 GB |
+| Supabase Free | Cached egress / mo | **5 GB** | negligible | — | 3.5 GB |
+| Supabase Free | MAU | **50,000** | 1–few | — | 35,000 |
+| Supabase Free | Active projects | **2** | 1 (`svgphkbtspqgsliqbsfx`) | — | n/a |
+| Supabase Free | Inactivity pause | **7 days no DB activity** | n/a | mitigation = §2 Option A (manual unpause) | n/a |
+
+> For the single/few-user profile, the realistic trigger across **all** of these is **none except the 7-day Supabase pause**. Every numeric meter sits 2–4 orders of magnitude under its cap.
 
 ## 5. Spend management & when to upgrade
 
-TBD-measure
+**Vercel Hobby (verified 2026-06-09):**
+- On exceeding included usage the project is **paused, not billed** — Hobby cannot purchase overage. Consequence: hitting a cap means the **site goes down** until the period resets (or you upgrade).
+- **Upgrade trigger → Pro (~$20/mo):** sustained traffic approaching the caps, commercial use, or a hard requirement to never go down. None apply at 1–few users.
+- Usage/notifications: **Dashboard → (account) → Settings → Billing / Usage**. Check the Usage tab periodically; there's no auto-bill surprise on Hobby (it pauses instead).
+
+**Supabase Free (verified 2026-06-09):**
+- Free has **no paid overage** — exceeding caps restricts/degrades the project rather than auto-billing. The **Spend Cap** concept applies to *paid* plans (Pro $25/mo, with a spend cap that, when on, prevents overage charges by restricting usage). On Free the practical controls are the usage meters + the inactivity pause.
+- **Upgrade trigger → Pro ($25/mo)** only if: (a) DB approaches ~500 MB, (b) the 7-day auto-pause becomes unacceptable (Pro projects don't auto-pause), or (c) egress approaches 5 GB. None apply at 1–few users.
+
+**Headline conclusion:** with **D3 (no LLM) / D4 (no Upstash) / D5 (no Realtime/Storage)** in force and a single/few-user profile, **Cóndor stays comfortably inside both free tiers**. The only operational item is the **Supabase 7-day inactivity pause**, accepted with manual-unpause mitigation (§2, Option A). No upgrade is warranted on current usage.
 
 ## 6. Verification (suite + e2e green)
 
