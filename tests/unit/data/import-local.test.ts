@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LocalStorageRepository } from '@/lib/data/local-storage-repository';
 import { hasLocalDataToImport, importLocalToCloud } from '@/lib/data/import-local';
 import type { Repository } from '@/lib/data/repository';
-import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule, Budget } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 
 // ---- Helpers ---------------------------------------------------------------
@@ -40,6 +40,7 @@ class FakeCloudRepository implements Repository {
   private expenses: Expense[] = [];
   private categories: Category[] = [];
   private rules: CategoryRule[] = [];
+  private budgets: Budget[] = [];
   private settings: Settings = {
     baseCurrency: 'COP',
     locale: 'es',
@@ -78,6 +79,13 @@ class FakeCloudRepository implements Repository {
     if (i >= 0) this.rules[i] = r; else this.rules.push(r);
     return r;
   }
+  async listBudgets(): Promise<Budget[]> { return [...this.budgets]; }
+  async upsertBudget(b: Budget): Promise<Budget> {
+    const i = this.budgets.findIndex(x => x.id === b.id);
+    if (i >= 0) this.budgets[i] = b; else this.budgets.push(b);
+    return b;
+  }
+  async deleteBudget(_id: string): Promise<void> {}
   async getSettings(): Promise<Settings> { return { ...this.settings }; }
 
   async exportAll(): Promise<ExportBundle> {

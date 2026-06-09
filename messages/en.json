@@ -32,7 +32,12 @@
     "selectIcon": "Select icon",
     "colorSwatch": "Color {hex}",
     "customColor": "Custom color",
-    "pickCustomColor": "Pick custom color"
+    "pickCustomColor": "Pick custom color",
+    "budget_label": "Monthly budget",
+    "budget_placeholder": "No budget",
+    "budget_optional": "Optional",
+    "spentOfBudget": "{spent} of {budget}",
+    "overBudget": "Over budget"
   },
   "Nav": {
     "home": "Home",
@@ -58,7 +63,8 @@
     "whenSpent": "When did you spend?",
     "emptyTitle": "No expenses this month",
     "emptyBody": "Log your first expense and start seeing your spending patterns.",
-    "addFirst": "Add expense"
+    "addFirst": "Add expense",
+    "overBudget": "Over budget"
   },
   "Historico": {
     "title": "History",

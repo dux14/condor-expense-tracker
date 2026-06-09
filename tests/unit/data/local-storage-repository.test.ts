@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { LocalStorageRepository, DEFAULT_SETTINGS } from '@/lib/data/local-storage-repository';
 import { PRESET_CATEGORIES } from '@/lib/domain/presets';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
-import type { Expense, Category, CategoryRule } from '@/lib/domain/types';
+import type { Expense, Category, CategoryRule, Budget } from '@/lib/domain/types';
 
 // Helper to create a minimal valid Expense
 function makeExpense(overrides: Partial<Expense> = {}): Expense {
@@ -283,6 +283,47 @@ describe('LocalStorageRepository', () => {
       await repo.upsertCategoryRule(makeRule({ id: 'r1' }));
       await repo.upsertCategoryRule(makeRule({ id: 'r2', pattern: 'RAPPI' }));
       expect(await repo.listCategoryRules()).toHaveLength(2);
+    });
+  });
+
+  // ---- Budgets ----
+
+  function makeBudget(overrides: Partial<Budget> = {}) {
+    return {
+      id: 'bud-1', categoryId: 'preset-comida', amountBase: 300000, period: 'monthly' as const,
+      createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z', ...overrides,
+    };
+  }
+
+  describe('budgets', () => {
+    it('listBudgets returns [] on fresh storage', async () => {
+      expect(await repo.listBudgets()).toEqual([]);
+    });
+
+    it('upsertBudget persists and returns the budget', async () => {
+      const b = makeBudget();
+      expect(await repo.upsertBudget(b)).toEqual(b);
+      expect(await repo.listBudgets()).toEqual([b]);
+    });
+
+    it('upsertBudget with the same id updates in place (no duplicate)', async () => {
+      await repo.upsertBudget(makeBudget({ amountBase: 100 }));
+      await repo.upsertBudget(makeBudget({ amountBase: 999 }));
+      const list = await repo.listBudgets();
+      expect(list).toHaveLength(1);
+      expect(list[0].amountBase).toBe(999);
+    });
+
+    it('deleteBudget removes the budget', async () => {
+      await repo.upsertBudget(makeBudget({ id: 'b-del' }));
+      await repo.upsertBudget(makeBudget({ id: 'b-keep' }));
+      await repo.deleteBudget('b-del');
+      expect((await repo.listBudgets()).map((b) => b.id)).toEqual(['b-keep']);
+    });
+
+    it('corrupted JSON in condor:budgets → listBudgets returns []', async () => {
+      localStorage.setItem('condor:budgets', '{ BROKEN');
+      expect(await repo.listBudgets()).toEqual([]);
     });
   });
 

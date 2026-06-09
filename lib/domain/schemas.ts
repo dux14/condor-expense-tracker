@@ -49,6 +49,20 @@ export const categorySchema = z.object({
   hidden: z.boolean().optional(),
 });
 
+export const budgetSchema = z.object({
+  id: z.string(),
+  categoryId: z.string(),
+  amountBase: z.number().gte(0),
+  period: z.literal('monthly'),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+/** Validates and parses a Budget input. Throws ZodError for invalid data. */
+export function parseBudget(input: unknown): import('./types').Budget {
+  return budgetSchema.parse(input) as import('./types').Budget;
+}
+
 export const settingsSchema = z.object({
   baseCurrency: z.string(),
   locale: z.enum(['es', 'en']),

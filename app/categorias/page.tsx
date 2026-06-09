@@ -6,11 +6,12 @@ import { useTranslations } from 'next-intl'
 import { ChevronLeft, Pencil, Trash2, PlusCircle } from 'lucide-react'
 
 import { useCondorStore } from '@/lib/store/store'
-import { expensesInMonth } from '@/lib/domain/selectors'
+import { expensesInMonth, budgetProgress } from '@/lib/domain/selectors'
 import { CATEGORY_PALETTE } from '@/lib/domain/palette'
 import { OTROS_ID } from '@/lib/domain/presets'
 import { formatMoney } from '@/lib/format/money'
 import { CategoryListItem } from '@/components/category/CategoryListItem'
+import { BudgetProgressLine } from '@/components/category/BudgetProgressLine'
 import { NewCategorySheet } from '@/components/category/NewCategorySheet'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { BottomNav } from '@/components/nav/BottomNav'
@@ -27,6 +28,9 @@ export default function CategoriasPage() {
   const addCategory = useCondorStore((s) => s.addCategory)
   const updateCategory = useCondorStore((s) => s.updateCategory)
   const deleteCategory = useCondorStore((s) => s.deleteCategory)
+  const budgets = useCondorStore((s) => s.budgets)
+  const setBudget = useCondorStore((s) => s.setBudget)
+  const deleteBudget = useCondorStore((s) => s.deleteBudget)
 
   const { baseCurrency, locale } = settings
 
@@ -39,6 +43,10 @@ export default function CategoriasPage() {
     return formatMoney(sum, baseCurrency, locale)
   }
 
+  // Budget progress per category
+  const progress = budgetProgress(expenses, budgets, month)
+  const progressById = new Map(progress.map((p) => [p.categoryId, p]))
+
   // Split preset vs custom categories
   const presetCategories = categories.filter((c) => c.isPreset && !c.hidden)
   const customCategories = categories.filter((c) => !c.isPreset)
@@ -50,6 +58,7 @@ export default function CategoriasPage() {
     name: string
     color: string
     icon: string
+    budgetBase: number | null
   } | null>(null)
 
   // Delete dialog state
@@ -64,16 +73,23 @@ export default function CategoriasPage() {
   }
 
   function openEdit(cat: { id: string; name: string; color: string; icon: string }) {
-    setEditingCategory(cat)
+    setEditingCategory({
+      ...cat,
+      budgetBase: budgets.find((b) => b.categoryId === cat.id)?.amountBase ?? null,
+    })
     setSheetOpen(true)
   }
 
-  async function handleSheetSubmit(data: { name: string; color: string; icon: string }) {
+  async function handleSheetSubmit(data: { name: string; color: string; icon: string; budgetBase: number | null }) {
+    let categoryId: string
     if (editingCategory) {
-      await updateCategory(editingCategory.id, data)
+      await updateCategory(editingCategory.id, { name: data.name, color: data.color, icon: data.icon })
+      categoryId = editingCategory.id
     } else {
-      await addCategory(data)
+      categoryId = await addCategory({ name: data.name, color: data.color, icon: data.icon })
     }
+    if (data.budgetBase === null) await deleteBudget(categoryId)
+    else await setBudget(categoryId, data.budgetBase)
   }
 
   async function handleDeleteConfirm() {
@@ -121,6 +137,9 @@ export default function CategoriasPage() {
                   onPress={() =>
                     router.push('/historico?cat=' + cat.id + '&m=' + month)
                   }
+                  below={progressById.has(cat.id)
+                    ? <BudgetProgressLine {...progressById.get(cat.id)!} baseCurrency={baseCurrency} locale={locale} />
+                    : undefined}
                   actions={
                     <button
                       type="button"
@@ -158,6 +177,9 @@ export default function CategoriasPage() {
                     category={cat}
                     subtitle={totalById(cat.id)}
                     trailing="none"
+                    below={progressById.has(cat.id)
+                      ? <BudgetProgressLine {...progressById.get(cat.id)!} baseCurrency={baseCurrency} locale={locale} />
+                      : undefined}
                     actions={
                       <>
                         <button

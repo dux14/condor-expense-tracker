@@ -1,5 +1,5 @@
 import type { Repository } from '@/lib/data/repository';
-import type { Expense, Category, Settings, ExportBundle, CategoryRule } from '@/lib/domain/types';
+import type { Expense, Category, Settings, ExportBundle, CategoryRule, Budget } from '@/lib/domain/types';
 import { SCHEMA_VERSION } from '@/lib/domain/types';
 import { PRESET_CATEGORIES } from '@/lib/domain/presets';
 import { DEFAULT_SETTINGS } from '@/lib/data/local-storage-repository';
@@ -13,6 +13,7 @@ export class FakeRemoteRepository implements Repository {
   expenses: Expense[] = [];
   categories: Category[] = [...PRESET_CATEGORIES];
   rules: CategoryRule[] = [];
+  budgets: Budget[] = [];
   settings: Settings = { ...DEFAULT_SETTINGS };
 
   async listExpenses(): Promise<Expense[]> { return this.expenses.map(e => ({ ...e })); }
@@ -44,6 +45,15 @@ export class FakeRemoteRepository implements Repository {
     if (i >= 0) this.rules[i] = { ...r }; else this.rules.push({ ...r });
     return { ...r };
   }
+  async listBudgets(): Promise<Budget[]> { return this.budgets.map(b => ({ ...b })); }
+  async upsertBudget(b: Budget): Promise<Budget> {
+    const i = this.budgets.findIndex(x => x.id === b.id);
+    if (i >= 0) this.budgets[i] = { ...b }; else this.budgets.push({ ...b });
+    return { ...b };
+  }
+  async deleteBudget(id: string): Promise<void> {
+    this.budgets = this.budgets.filter(x => x.id !== id);
+  }
   async getSettings(): Promise<Settings> { return { ...this.settings }; }
   async putSettings(s: Settings): Promise<Settings> { this.settings = { ...s }; return { ...s }; }
   async exportAll(): Promise<ExportBundle> {
@@ -59,6 +69,7 @@ export class FakeRemoteRepository implements Repository {
     this.expenses = [];
     this.categories = [...PRESET_CATEGORIES];
     this.rules = [];
+    this.budgets = [];
     this.settings = { ...DEFAULT_SETTINGS };
   }
 }
@@ -79,6 +90,9 @@ export function offlineGate(remote: Repository): {
     listCategories: () => guard(() => remote.listCategories()),
     upsertCategory: (c) => guard(() => remote.upsertCategory(c)),
     deleteCategory: (id, r) => guard(() => remote.deleteCategory(id, r)),
+    listBudgets: () => guard(() => remote.listBudgets()),
+    upsertBudget: (b) => guard(() => remote.upsertBudget(b)),
+    deleteBudget: (id) => guard(() => remote.deleteBudget(id)),
     listCategoryRules: () => guard(() => remote.listCategoryRules()),
     upsertCategoryRule: (r) => guard(() => remote.upsertCategoryRule(r)),
     getSettings: () => guard(() => remote.getSettings()),

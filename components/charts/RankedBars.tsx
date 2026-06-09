@@ -1,5 +1,6 @@
 'use client'
 
+import { AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatMoney } from '@/lib/format/money'
 import { barWidths, type RankedItem } from '@/lib/domain/geometry'
@@ -11,6 +12,8 @@ interface RankedBarsProps {
   locale: Locale
   onSelect?: (categoryId: string) => void
   className?: string
+  overCategoryIds?: Set<string>
+  overLabel?: string
 }
 
 export function RankedBars({
@@ -19,6 +22,8 @@ export function RankedBars({
   locale,
   onSelect,
   className,
+  overCategoryIds,
+  overLabel,
 }: RankedBarsProps) {
 
   const widths = barWidths(items.map((i) => i.totalBase))
@@ -27,6 +32,7 @@ export function RankedBars({
     <ol className={cn('flex flex-col gap-0.5', className)} role="list">
       {items.map((item, idx) => {
         const isRest = item.categoryId === '__rest__'
+        const over = !isRest && (overCategoryIds?.has(item.categoryId) ?? false)
         const pctStr = `${Math.round(item.pct)}%`
         const amountStr = formatMoney(item.totalBase, baseCurrency, locale)
         const barW = widths[idx] ?? 0
@@ -38,9 +44,12 @@ export function RankedBars({
               <span className="text-sm text-text leading-tight truncate">
                 {item.name}
               </span>
-              <span className="font-money text-sm text-text whitespace-nowrap shrink-0">
+              <span className="font-money text-sm text-text whitespace-nowrap shrink-0 flex items-center gap-1">
                 {amountStr}&nbsp;
                 <span className="text-muted-txt text-xs">{pctStr}</span>
+                {over && (
+                  <AlertTriangle size={12} aria-hidden="true" className="text-danger" />
+                )}
               </span>
             </div>
             {/* Bar track */}
@@ -49,10 +58,11 @@ export function RankedBars({
                 className={cn(
                   'absolute inset-y-0 left-0 rounded-full',
                   'bar-grow',
+                  over && 'bg-danger',
                 )}
                 style={{
                   width: `${barW}%`,
-                  backgroundColor: item.color,
+                  ...(over ? {} : { backgroundColor: item.color }),
                   // stagger each bar slightly
                   animationDelay: `${idx * 55}ms`,
                 }}
@@ -76,7 +86,7 @@ export function RankedBars({
               data-testid={`ranked-bar-${item.categoryId}`}
               onClick={() => onSelect?.(item.categoryId)}
               className="w-full text-left py-2 px-0 rounded-condor focus-visible:outline focus-visible:outline-2 focus-visible:outline-condor-primary transition-opacity active:opacity-70"
-              aria-label={`${item.name} ${amountStr} ${pctStr}`}
+              aria-label={`${item.name} ${amountStr} ${pctStr}${over && overLabel ? ` ${overLabel}` : ''}`}
             >
               {rowContent}
             </button>

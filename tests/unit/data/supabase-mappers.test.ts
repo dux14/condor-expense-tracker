@@ -8,9 +8,11 @@ import {
   rowToSettings,
   categoryRuleToRow,
   rowToCategoryRule,
+  budgetToRow,
+  rowToBudget,
 } from '@/lib/data/supabase-mappers';
 import type { ExpenseRow, CategoryRow, SettingsRow, CategoryRuleRow } from '@/lib/data/supabase-mappers';
-import type { Expense, Category, Settings, CategoryRule } from '@/lib/domain/types';
+import type { Expense, Category, Settings, CategoryRule, Budget } from '@/lib/domain/types';
 import { PRESET_CATEGORIES } from '@/lib/domain/presets';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -426,5 +428,48 @@ describe('rowToCategoryRule', () => {
     const rule = rowToCategoryRule(row);
     expect('created_at' in rule).toBe(false);
     expect('updated_at' in rule).toBe(false);
+  });
+});
+
+// ── Budget mappers ───────────────────────────────────────────────────────────
+
+function makeBudget(over: Partial<Budget> = {}): Budget {
+  return {
+    id: 'b1',
+    categoryId: 'preset-comida',
+    amountBase: 500000,
+    period: 'monthly',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-02T00:00:00.000Z',
+    ...over,
+  };
+}
+
+describe('budget mappers', () => {
+  it('budgetToRow maps camelCase → snake_case and omits user_id', () => {
+    const row = budgetToRow(makeBudget());
+    expect(row).toEqual({
+      id: 'b1',
+      category_id: 'preset-comida',
+      amount_base: 500000,
+      period: 'monthly',
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-02T00:00:00.000Z',
+    });
+    expect('user_id' in row).toBe(false);
+  });
+
+  it('rowToBudget is the exact inverse (round-trip)', () => {
+    const b = makeBudget();
+    expect(rowToBudget(budgetToRow(b))).toEqual(b);
+  });
+
+  it('rowToBudget normalizes timestamptz (+00:00) to canonical .000Z', () => {
+    const b = rowToBudget({
+      id: 'b9', category_id: 'preset-comida', amount_base: 100, period: 'monthly',
+      created_at: '2026-03-01T05:00:00+00:00', updated_at: '2026-03-02T05:00:00+00:00',
+    });
+    expect(b.createdAt).toBe('2026-03-01T05:00:00.000Z');
+    expect(b.updatedAt).toBe('2026-03-02T05:00:00.000Z');
   });
 });

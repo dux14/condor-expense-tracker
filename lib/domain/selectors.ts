@@ -1,4 +1,4 @@
-import type { Expense, Category } from './types';
+import type { Expense, Category, Budget } from './types';
 import { PRESET_CATEGORIES, OTROS_ID } from './presets';
 import {
   daysInMonth,
@@ -291,4 +291,59 @@ export function transactionsByDay(
   groups.sort((a, b) => b.day.localeCompare(a.day));
 
   return groups;
+}
+
+// ---------------------------------------------------------------------------
+// budgetProgress
+// ---------------------------------------------------------------------------
+
+export interface BudgetProgressRow {
+  categoryId: string;
+  spentBase: number;   // sum of baseAmount (null skipped) for the category in month
+  budgetBase: number;  // the budget cap
+  pct: number;         // spentBase / budgetBase * 100; 0 when budgetBase === 0; NOT clamped
+  over: boolean;       // spentBase > budgetBase (strict; exactly 100% is not over)
+}
+
+/**
+ * Per-category budget progress for the given month.
+ * - One row per BUDGETED category (categories without a budget produce no row).
+ * - When a category has multiple budgets, the newest by updatedAt wins.
+ * - spentBase sums baseAmount; null baseAmounts (unconverted FX) are skipped.
+ * - pct is unclamped so the UI can render e.g. "180%"; 0 when budgetBase === 0.
+ * - over is strict (> budget), so exactly 100% is on-budget, not over.
+ * - Rows are sorted by categoryId asc for deterministic rendering.
+ */
+export function budgetProgress(
+  expenses: Expense[],
+  budgets: Budget[],
+  month: string,
+): BudgetProgressRow[] {
+  if (budgets.length === 0) return [];
+
+  // Dedupe budgets by categoryId, keeping the newest updatedAt.
+  const latest = new Map<string, Budget>();
+  for (const b of budgets) {
+    const prev = latest.get(b.categoryId);
+    if (!prev || b.updatedAt > prev.updatedAt) latest.set(b.categoryId, b);
+  }
+
+  // Sum spent per category for the month (null baseAmounts skipped).
+  const inMonth = expensesInMonth(expenses, month);
+  const spent = new Map<string, number>();
+  for (const e of inMonth) {
+    if (e.baseAmount === null) continue;
+    spent.set(e.categoryId, (spent.get(e.categoryId) ?? 0) + e.baseAmount);
+  }
+
+  const rows: BudgetProgressRow[] = [];
+  for (const [categoryId, budget] of latest) {
+    const spentBase = spent.get(categoryId) ?? 0;
+    const budgetBase = budget.amountBase;
+    const pct = budgetBase > 0 ? (spentBase / budgetBase) * 100 : 0;
+    rows.push({ categoryId, spentBase, budgetBase, pct, over: spentBase > budgetBase });
+  }
+
+  rows.sort((a, b) => a.categoryId.localeCompare(b.categoryId));
+  return rows;
 }

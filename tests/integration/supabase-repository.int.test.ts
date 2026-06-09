@@ -68,4 +68,18 @@ describe('SupabaseRepository (local Supabase)', () => {
     const aList = await repoA.listExpenses();
     expect(aList.find((x) => x.id === 'shared-id')).toBeUndefined();
   });
+
+  it('budget round-trips and is RLS-isolated', async () => {
+    const b = {
+      id: crypto.randomUUID(),
+      categoryId: 'preset-comida',
+      amountBase: 250000,
+      period: 'monthly' as const,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    };
+    await repoA.upsertBudget(b);
+    expect((await repoA.listBudgets()).find((x) => x.id === b.id)).toEqual(b);
+    expect((await repoB.listBudgets()).find((x) => x.id === b.id)).toBeUndefined();
+  });
 });

@@ -14,6 +14,8 @@ export interface CategoryListItemProps {
   /** Optional custom action nodes rendered at the trailing edge, replacing the built-in trailing. */
   actions?: React.ReactNode
   className?: string
+  /** Optional content rendered below the subtitle, inside the name column. */
+  below?: React.ReactNode
 }
 
 export function CategoryListItem({
@@ -23,18 +25,25 @@ export function CategoryListItem({
   trailing = 'chevron',
   actions,
   className,
+  below,
 }: CategoryListItemProps) {
   const main = (
     <>
-      {/* Badge */}
-      <CategoryBadge color={category.color} icon={category.icon} size={40} />
+      {/* Badge — nudge down slightly when below is present so it aligns with the name line */}
+      <CategoryBadge
+        color={category.color}
+        icon={category.icon}
+        size={40}
+        className={below ? 'mt-0.5' : undefined}
+      />
 
-      {/* Name + subtitle */}
+      {/* Name + subtitle + below */}
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-text">{category.name}</p>
         {subtitle && (
           <p className="font-money text-xs text-muted-txt">{subtitle}</p>
         )}
+        {below}
       </div>
     </>
   )
@@ -48,20 +57,26 @@ export function CategoryListItem({
     )
   )
 
+  const crossAlign = below ? 'items-start' : 'items-center'
+
   if (onPress) {
     // The pressable area and the trailing actions are siblings — interactive
     // elements must never nest inside the row button.
     return (
       <div
         className={cn(
-          'flex w-full items-center gap-3 pr-4 transition-colors hover:bg-surface-2',
+          'flex w-full gap-3 pr-4 transition-colors hover:bg-surface-2',
+          crossAlign,
           className,
         )}
       >
         <button
           type="button"
           onClick={onPress}
-          className="flex min-h-[56px] min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left active:bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-condor-primary"
+          className={cn(
+            'flex min-h-[56px] min-w-0 flex-1 gap-3 px-4 py-3 text-left active:bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-condor-primary',
+            crossAlign,
+          )}
         >
           {main}
         </button>
@@ -73,7 +88,8 @@ export function CategoryListItem({
   return (
     <div
       className={cn(
-        'flex min-h-[56px] w-full items-center gap-3 px-4 py-3',
+        'flex min-h-[56px] w-full gap-3 px-4 py-3',
+        crossAlign,
         className,
       )}
     >

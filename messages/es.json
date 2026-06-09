@@ -32,7 +32,12 @@
     "selectIcon": "Seleccionar ícono",
     "colorSwatch": "Color {hex}",
     "customColor": "Color personalizado",
-    "pickCustomColor": "Elegir color personalizado"
+    "pickCustomColor": "Elegir color personalizado",
+    "budget_label": "Presupuesto mensual",
+    "budget_placeholder": "Sin presupuesto",
+    "budget_optional": "Opcional",
+    "spentOfBudget": "{spent} de {budget}",
+    "overBudget": "Sobre el presupuesto"
   },
   "Nav": {
     "home": "Inicio",
@@ -58,7 +63,8 @@
     "whenSpent": "¿Cuándo gastaste?",
     "emptyTitle": "Sin gastos este mes",
     "emptyBody": "Registra tu primer gasto y empieza a ver tus patrones de consumo.",
-    "addFirst": "Añadir gasto"
+    "addFirst": "Añadir gasto",
+    "overBudget": "Sobre el presupuesto"
   },
   "Historico": {
     "title": "Histórico",
