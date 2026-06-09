@@ -38,6 +38,8 @@ const nextConfig: NextConfig = {
   // later features can use Route Handlers, middleware, and cookie-based auth.
   // The PWA is unaffected: public/sw.js is a static asset registered client-side.
   images: {
+    // Explicit: assets are static/small; skip the metered Image Optimizer on Hobby (F11).
+    unoptimized: true,
     remotePatterns: [
       // Mirrored in the CSP img-src directive above — update both together.
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
