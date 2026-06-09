@@ -17,3 +17,10 @@ if [ "$fail" -ne 0 ]; then
   echo "FAIL: UI/non-edge code touches network or storage directly"; exit 1
 fi
 echo "OK: UI never touches network/storage directly"
+
+# Dangerous HTML / dynamic code execution gate (XSS + code-injection surface).
+# The (^|[^a-zA-Z.]) anchor also catches eval( at the start of a line (mirrors scan()).
+if grep -rEn "dangerouslySetInnerHTML|(^|[^a-zA-Z.])eval\(|new Function\(" app components lib --include='*.ts' --include='*.tsx' 2>/dev/null; then
+  echo "FAIL: dangerous HTML/eval usage found"; exit 1
+fi
+echo "OK: no dangerouslySetInnerHTML/eval"
