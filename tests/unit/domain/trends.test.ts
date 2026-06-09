@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Expense } from '@/lib/domain/types'
-import { monthOverMonth, categoryBaseline } from '@/lib/domain/trends'
+import { monthOverMonth, categoryBaseline, detectAnomalies } from '@/lib/domain/trends'
 
 let _id = 0
 function makeExpense(p: Partial<Expense>): Expense {
@@ -108,5 +108,87 @@ describe('categoryBaseline', () => {
     const b = categoryBaseline(expenses, 'cat-a', '2026-06', 3)
     expect(b.median).toBe(200)
     expect(b.mad).toBe(100)
+  })
+})
+
+describe('detectAnomalies', () => {
+  // 3 months of steady ~100 spend in cat-a, then a spike to 1000 in the anchor month
+  function steadyPlusSpike(): Expense[] {
+    return [
+      makeExpense({ date: '2026-03-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-04-10', baseAmount: 110, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-05-10', baseAmount: 90, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-06-10', baseAmount: 1000, categoryId: 'cat-a' }), // spike
+    ]
+  }
+
+  it('flags a category spike as emergencia', () => {
+    const result = detectAnomalies(steadyPlusSpike(), '2026-06', { k: 3 })
+    const a = result.find((r) => r.categoryId === 'cat-a')!
+    expect(a.status).toBe('emergencia')
+    expect(a.amount).toBe(1000)
+    expect(a.baseline.median).toBeGreaterThan(0)
+  })
+
+  it('labels steady spend as normal', () => {
+    const expenses = [
+      makeExpense({ date: '2026-03-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-04-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-05-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-06-10', baseAmount: 105, categoryId: 'cat-a' }),
+    ]
+    const result = detectAnomalies(expenses, '2026-06', { k: 3 })
+    expect(result.find((r) => r.categoryId === 'cat-a')!.status).toBe('normal')
+  })
+
+  it('returns no anomalies with fewer than 3 months of history (insufficient data)', () => {
+    const expenses = [
+      makeExpense({ date: '2026-05-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-06-10', baseAmount: 9999, categoryId: 'cat-a' }),
+    ]
+    const result = detectAnomalies(expenses, '2026-06', { k: 3 })
+    const a = result.find((r) => r.categoryId === 'cat-a')
+    expect(a?.status).toBe('normal')
+    expect(a?.insufficientData).toBe(true)
+  })
+
+  it('MAD=0 with a real spike still flags via relative fallback', () => {
+    // perfectly flat 100/month history, then 1000 → MAD is 0
+    const expenses = [
+      makeExpense({ date: '2026-03-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-04-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-05-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-06-10', baseAmount: 1000, categoryId: 'cat-a' }),
+    ]
+    const result = detectAnomalies(expenses, '2026-06', { k: 3 })
+    expect(result.find((r) => r.categoryId === 'cat-a')!.status).toBe('emergencia')
+  })
+
+  it('MAD=0 with spend at the baseline stays normal', () => {
+    const expenses = [
+      makeExpense({ date: '2026-03-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-04-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-05-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-06-10', baseAmount: 100, categoryId: 'cat-a' }),
+    ]
+    const result = detectAnomalies(expenses, '2026-06', { k: 3 })
+    expect(result.find((r) => r.categoryId === 'cat-a')!.status).toBe('normal')
+  })
+
+  it('defaults k to 3 when opts omitted', () => {
+    const result = detectAnomalies(steadyPlusSpike(), '2026-06')
+    expect(result.find((r) => r.categoryId === 'cat-a')!.status).toBe('emergencia')
+  })
+
+  it('only considers categories that have spend in the anchor month', () => {
+    const expenses = [
+      makeExpense({ date: '2026-03-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-04-10', baseAmount: 100, categoryId: 'cat-a' }),
+      makeExpense({ date: '2026-05-10', baseAmount: 100, categoryId: 'cat-a' }),
+      // cat-a has no anchor-month spend → not in result
+      makeExpense({ date: '2026-06-10', baseAmount: 50, categoryId: 'cat-b' }),
+    ]
+    const result = detectAnomalies(expenses, '2026-06', { k: 3 })
+    expect(result.map((r) => r.categoryId)).toEqual(['cat-b'])
   })
 })
