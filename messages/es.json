@@ -10,7 +10,9 @@
     "no_conversion": "sin conversión",
     "back": "Volver",
     "editNamed": "Editar {name}",
-    "deleteNamed": "Eliminar {name}"
+    "deleteNamed": "Eliminar {name}",
+    "emergencia": "Inusual",
+    "anomalyChip": "Gasto inusual para {category}"
   },
   "Categorias": {
     "title": "Categorías",
@@ -62,7 +64,24 @@
     "title": "Histórico",
     "empty": "Sin transacciones este mes.",
     "filteredBy": "Filtrado por",
-    "clearFilter": "Quitar filtro"
+    "clearFilter": "Quitar filtro",
+    "tabTransactions": "Movimientos",
+    "tabTrends": "Tendencias"
+  },
+  "Tendencias": {
+    "title": "Tendencias",
+    "perCategory": "Por categoría",
+    "vsNormalTitle": "Este mes vs tu normal",
+    "normal": "Dentro de lo normal",
+    "emergencia": "Gasto inusual",
+    "insufficientData": "Datos insuficientes para comparar",
+    "baselineLabel": "Tu normal: {amount}",
+    "thisMonthLabel": "Este mes: {amount}",
+    "empty": "Aún no hay suficiente historial para mostrar tendencias.",
+    "trendSummary": "Tendencia de gasto mensual",
+    "trendTableCaption": "Gasto mensual",
+    "monthColumn": "Mes",
+    "amountColumn": "Monto"
   },
   "Ajustes": {
     "title": "Ajustes",
