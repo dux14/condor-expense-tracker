@@ -38,6 +38,15 @@ export interface Settings {
   schemaVersion: number;
 }
 
+export interface Budget {
+  id: string;
+  categoryId: string;
+  amountBase: number;       // monthly cap in base currency, >= 0
+  period: 'monthly';        // only monthly in Phase 2
+  createdAt: string;        // ISO timestamp
+  updatedAt: string;        // ISO timestamp
+}
+
 export interface ExportBundle {
   schemaVersion: number;
   exportedAt: string;
