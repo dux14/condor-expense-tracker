@@ -244,3 +244,66 @@ export function dayBarHeights(values: number[], maxHeight: number): number[] {
   if (max === 0) return values.map(() => 0)
   return values.map((v) => (v / max) * maxHeight)
 }
+
+// ---------------------------------------------------------------------------
+// median
+// ---------------------------------------------------------------------------
+
+/**
+ * Median of a numeric array. Empty → 0. Does not mutate the input.
+ * Odd length → middle element; even length → mean of the two middle elements.
+ */
+export function median(values: number[]): number {
+  if (values.length === 0) return 0
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid]
+}
+
+// ---------------------------------------------------------------------------
+// mad (median absolute deviation)
+// ---------------------------------------------------------------------------
+
+/**
+ * Median Absolute Deviation: median(|x_i - median(x)|).
+ * Empty → 0. All-equal → 0. Robust scale estimate used for anomaly detection.
+ * (Raw MAD, not scaled by the 1.4826 normal-consistency constant — the
+ * detection threshold absorbs scaling via the configurable k.)
+ */
+export function mad(values: number[]): number {
+  if (values.length === 0) return 0
+  const m = median(values)
+  const deviations = values.map((v) => Math.abs(v - m))
+  return median(deviations)
+}
+
+// ---------------------------------------------------------------------------
+// linePoints
+// ---------------------------------------------------------------------------
+
+export interface Point {
+  x: number
+  y: number
+}
+
+/**
+ * Maps a value series to SVG points within [0,width] × [0,height].
+ * - x spread evenly across width (first at 0, last at width).
+ * - y inverted so the MAX value sits at the top (y=0) and MIN at the bottom.
+ * - Flat series (max === min) sits on the vertical midline.
+ * - Single value → one centered point. Empty → [].
+ */
+export function linePoints(values: number[], width: number, height: number): Point[] {
+  if (values.length === 0) return []
+  if (values.length === 1) return [{ x: 0, y: height / 2 }]
+  const max = Math.max(...values)
+  const min = Math.min(...values)
+  const span = max - min
+  const step = width / (values.length - 1)
+  return values.map((v, i) => ({
+    x: i * step,
+    y: span === 0 ? height / 2 : height - ((v - min) / span) * height,
+  }))
+}

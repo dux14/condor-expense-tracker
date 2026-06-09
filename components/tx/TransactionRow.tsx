@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useTranslations } from 'next-intl'
+import { AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Expense, Category, Locale, Currency } from '@/lib/domain/types'
 import { formatMoney } from '@/lib/format/money'
@@ -14,6 +15,7 @@ export interface TransactionRowProps {
   baseCurrency: Currency
   onPress?: () => void
   className?: string
+  isAnomaly?: boolean
 }
 
 export function TransactionRow({
@@ -23,6 +25,7 @@ export function TransactionRow({
   baseCurrency,
   onPress,
   className,
+  isAnomaly,
 }: TransactionRowProps) {
   const t = useTranslations('Common')
 
@@ -60,7 +63,18 @@ export function TransactionRow({
 
       {/* Middle: labels */}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-text">{primaryLabel}</p>
+        <div className="flex items-center gap-1 min-w-0">
+          <p className="truncate text-sm font-medium text-text">{primaryLabel}</p>
+          {isAnomaly && (
+            <span
+              className="shrink-0 inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-500 align-middle"
+              title={t('anomalyChip', { category: category.name })}
+            >
+              <AlertTriangle size={9} strokeWidth={2.5} aria-hidden />
+              {t('emergencia')}
+            </span>
+          )}
+        </div>
         {secondaryLabel && (
           <p className="truncate text-xs text-muted-txt">{secondaryLabel}</p>
         )}

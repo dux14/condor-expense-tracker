@@ -10,7 +10,9 @@
     "no_conversion": "no conversion",
     "back": "Go back",
     "editNamed": "Edit {name}",
-    "deleteNamed": "Delete {name}"
+    "deleteNamed": "Delete {name}",
+    "emergencia": "Unusual",
+    "anomalyChip": "Unusual spending for {category}"
   },
   "Categorias": {
     "title": "Categories",
@@ -62,7 +64,24 @@
     "title": "History",
     "empty": "No transactions this month.",
     "filteredBy": "Filtered by",
-    "clearFilter": "Clear filter"
+    "clearFilter": "Clear filter",
+    "tabTransactions": "Transactions",
+    "tabTrends": "Trends"
+  },
+  "Tendencias": {
+    "title": "Trends",
+    "perCategory": "By category",
+    "vsNormalTitle": "This month vs your normal",
+    "normal": "Within your normal range",
+    "emergencia": "Unusual spending",
+    "insufficientData": "Not enough data to compare",
+    "baselineLabel": "Your normal: {amount}",
+    "thisMonthLabel": "This month: {amount}",
+    "empty": "Not enough history yet to show trends.",
+    "trendSummary": "Monthly spending trend",
+    "trendTableCaption": "Monthly spending",
+    "monthColumn": "Month",
+    "amountColumn": "Amount"
   },
   "Ajustes": {
     "title": "Settings",

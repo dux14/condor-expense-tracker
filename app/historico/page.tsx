@@ -9,12 +9,15 @@ import { es, enUS } from 'date-fns/locale'
 
 import { useCondorStore } from '@/lib/store/store'
 import { transactionsByDay } from '@/lib/domain/selectors'
+import { detectAnomalies } from '@/lib/domain/trends'
 import type { Locale } from '@/lib/domain/types'
 
 import { BottomNav } from '@/components/nav/BottomNav'
 import { MonthSwitcher } from '@/components/home/MonthSwitcher'
 import { EmptyState } from '@/components/common/EmptyState'
 import { TransactionRow } from '@/components/tx/TransactionRow'
+import { SegmentedControl } from '@/components/settings/SegmentedControl'
+import { TrendsView } from '@/components/home/TrendsView'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -58,6 +61,15 @@ function HistoricoContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const view = searchParams.get('view') === 'trends' ? 'trends' : 'transactions'
+
+  // Categories whose spend this month is flagged as anomalous
+  const anomalyCats = new Set(
+    detectAnomalies(expenses, month)
+      .filter((a) => a.status === 'emergencia')
+      .map((a) => a.categoryId),
+  )
+
   const catParam = searchParams.get('cat')
 
   // Get all day groups for the current month
@@ -86,6 +98,14 @@ function HistoricoContent() {
     router.push('/historico?m=' + month)
   }
 
+  function setView(v: string) {
+    const p = new URLSearchParams(searchParams.toString())
+    if (v === 'transactions') p.delete('view')
+    else p.set('view', v)
+    p.set('m', month)
+    router.push('/historico?' + p.toString())
+  }
+
   return (
     <main className="min-h-dvh bg-bg pb-[calc(env(safe-area-inset-bottom)+5.5rem)]">
       <div className="mx-auto max-w-[480px] px-5">
@@ -96,63 +116,86 @@ function HistoricoContent() {
             {t('title')}
           </h1>
           <MonthSwitcher value={month} onChange={setMonth} locale={locale} />
+          <SegmentedControl
+            className="mt-3"
+            options={[
+              { value: 'transactions', label: t('tabTransactions') },
+              { value: 'trends', label: t('tabTrends') },
+            ]}
+            value={view}
+            onChange={setView}
+          />
         </header>
 
-        {/* ── Category filter chip ───────────────────────────────────── */}
-        {catParam && (
-          <div className="mb-3 flex items-center gap-2">
-            <span className="text-xs text-muted-txt">{t('filteredBy')}</span>
-            <button
-              type="button"
-              onClick={clearFilter}
-              className="inline-flex items-center gap-1.5 rounded-full bg-condor-primary/15 px-3 py-1 text-xs font-medium text-condor-primary transition-colors hover:bg-condor-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-condor-primary"
-              aria-label={t('clearFilter')}
-            >
-              <span>{filterLabel}</span>
-              <X size={12} strokeWidth={2.5} aria-hidden />
-            </button>
-          </div>
-        )}
-
-        {/* ── Transaction list or empty state ───────────────────────── */}
-        {isEmpty ? (
-          <EmptyState
-            icon={<History />}
-            title={t('empty')}
+        {/* ── Body: Trends or Transactions ──────────────────────────── */}
+        {view === 'trends' ? (
+          <TrendsView
+            expenses={expenses}
+            categories={categories}
+            month={month}
+            baseCurrency={baseCurrency}
+            locale={locale}
           />
         ) : (
-          <div className="flex flex-col gap-4">
-            {groups.map((group) => {
-              const dayLabel = formatDayHeader(group.day, locale)
-              // Capitalize first letter
-              const displayLabel = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)
+          <>
+            {/* ── Category filter chip ─────────────────────────────── */}
+            {catParam && (
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-xs text-muted-txt">{t('filteredBy')}</span>
+                <button
+                  type="button"
+                  onClick={clearFilter}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-condor-primary/15 px-3 py-1 text-xs font-medium text-condor-primary transition-colors hover:bg-condor-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-condor-primary"
+                  aria-label={t('clearFilter')}
+                >
+                  <span>{filterLabel}</span>
+                  <X size={12} strokeWidth={2.5} aria-hidden />
+                </button>
+              </div>
+            )}
 
-              return (
-                <section key={group.day}>
-                  {/* Day header */}
-                  <h2 className="mb-1 px-1 text-xs font-medium uppercase tracking-wide text-muted-txt">
-                    {displayLabel}
-                  </h2>
+            {/* ── Transaction list or empty state ──────────────────── */}
+            {isEmpty ? (
+              <EmptyState
+                icon={<History />}
+                title={t('empty')}
+              />
+            ) : (
+              <div className="flex flex-col gap-4">
+                {groups.map((group) => {
+                  const dayLabel = formatDayHeader(group.day, locale)
+                  // Capitalize first letter
+                  const displayLabel = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)
 
-                  {/* Rows */}
-                  <div className="rounded-condor bg-surface overflow-hidden divide-y divide-outline">
-                    {group.rows.map(({ expense, category }) => (
-                      <TransactionRow
-                        key={expense.id}
-                        expense={expense}
-                        category={category}
-                        locale={locale}
-                        baseCurrency={baseCurrency}
-                        onPress={() =>
-                          router.push('/anadir?id=' + expense.id)
-                        }
-                      />
-                    ))}
-                  </div>
-                </section>
-              )
-            })}
-          </div>
+                  return (
+                    <section key={group.day}>
+                      {/* Day header */}
+                      <h2 className="mb-1 px-1 text-xs font-medium uppercase tracking-wide text-muted-txt">
+                        {displayLabel}
+                      </h2>
+
+                      {/* Rows */}
+                      <div className="rounded-condor bg-surface overflow-hidden divide-y divide-outline">
+                        {group.rows.map(({ expense, category }) => (
+                          <TransactionRow
+                            key={expense.id}
+                            expense={expense}
+                            category={category}
+                            locale={locale}
+                            baseCurrency={baseCurrency}
+                            isAnomaly={anomalyCats.has(expense.categoryId)}
+                            onPress={() =>
+                              router.push('/anadir?id=' + expense.id)
+                            }
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )
+                })}
+              </div>
+            )}
+          </>
         )}
 
       </div>

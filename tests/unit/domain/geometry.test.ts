@@ -4,6 +4,9 @@ import {
   squarify,
   donutArcs,
   dayBarHeights,
+  median,
+  mad,
+  linePoints,
 } from '@/lib/domain/geometry'
 
 // ---------------------------------------------------------------------------
@@ -259,5 +262,66 @@ describe('dayBarHeights', () => {
       expect(h).toBeGreaterThanOrEqual(0)
       expect(h).toBeLessThanOrEqual(80)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// median
+// ---------------------------------------------------------------------------
+
+describe('median', () => {
+  it('returns 0 for empty input', () => {
+    expect(median([])).toBe(0)
+  })
+  it('returns the middle value for odd-length sorted-or-not input', () => {
+    expect(median([3, 1, 2])).toBe(2)
+  })
+  it('averages the two middle values for even-length input', () => {
+    expect(median([4, 1, 3, 2])).toBe(2.5)
+  })
+  it('does not mutate the input array', () => {
+    const arr = [3, 1, 2]
+    median(arr)
+    expect(arr).toEqual([3, 1, 2])
+  })
+})
+
+// ---------------------------------------------------------------------------
+// mad
+// ---------------------------------------------------------------------------
+
+describe('mad', () => {
+  it('returns 0 for empty input', () => {
+    expect(mad([])).toBe(0)
+  })
+  it('returns 0 when all values are identical', () => {
+    expect(mad([5, 5, 5])).toBe(0)
+  })
+  it('computes the median of absolute deviations from the median', () => {
+    // values [1,2,3,4,5] → median 3 → deviations [2,1,0,1,2] → median of those = 1
+    expect(mad([1, 2, 3, 4, 5])).toBe(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// linePoints
+// ---------------------------------------------------------------------------
+
+describe('linePoints', () => {
+  it('returns [] for empty input', () => {
+    expect(linePoints([], 100, 40)).toEqual([])
+  })
+  it('maps a single value to a centered point', () => {
+    const pts = linePoints([5], 100, 40)
+    expect(pts).toEqual([{ x: 0, y: 20 }])
+  })
+  it('spreads x evenly across width and inverts y (max at top)', () => {
+    const pts = linePoints([0, 10], 100, 40)
+    expect(pts[0]).toEqual({ x: 0, y: 40 }) // min → bottom
+    expect(pts[1]).toEqual({ x: 100, y: 0 }) // max → top
+  })
+  it('flat series sits on the vertical midline', () => {
+    const pts = linePoints([7, 7, 7], 100, 40)
+    expect(pts.map((p) => p.y)).toEqual([20, 20, 20])
   })
 })
