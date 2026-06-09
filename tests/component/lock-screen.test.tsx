@@ -18,6 +18,9 @@ function withIntl(ui: React.ReactElement) {
 let storedPin: PinHash
 
 beforeEach(async () => {
+  // The attempt backoff now persists to localStorage and is read fresh on
+  // mount; clear it so each test starts from a clean (unlocked) state.
+  localStorage.clear()
   storedPin = await hashPin('1234')
 })
 

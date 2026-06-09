@@ -5,12 +5,10 @@ import { useTranslations } from 'next-intl';
 import { Fingerprint } from 'lucide-react';
 import { verifyPin, type PinHash, isValidPin } from '@/lib/lock/pin';
 import { authenticateWithBiometric } from '@/lib/lock/webauthn';
+import { isLockedOut, registerFailedAttempt, resetAttempts } from '@/lib/lock/backoff';
 import CondorLogo from '@/components/common/CondorLogo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-const MAX_ATTEMPTS = 5;
-const BACKOFF_SECONDS = 30;
 
 export interface LockScreenProps {
   pinHash: PinHash;
@@ -22,8 +20,11 @@ export function LockScreen({ pinHash, biometricCredentialId, onUnlocked }: LockS
   const t = useTranslations('Lock');
   const [pin, setPin] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
-  const [attempts, setAttempts] = React.useState(0);
-  const [cooldown, setCooldown] = React.useState(0);
+  // Seed the countdown from the persisted lockout so a reload during a lockout
+  // still blocks (the whole point of persisting the backoff).
+  const [cooldown, setCooldown] = React.useState(() =>
+    Math.ceil(isLockedOut().retryAfterMs / 1000),
+  );
   const busy = React.useRef(false);
 
   // Backoff countdown
@@ -39,7 +40,10 @@ export function LockScreen({ pinHash, biometricCredentialId, onUnlocked }: LockS
     let cancelled = false;
     void (async () => {
       const ok = await authenticateWithBiometric(biometricCredentialId);
-      if (!cancelled && ok) onUnlocked();
+      if (!cancelled && ok) {
+        resetAttempts();
+        onUnlocked();
+      }
     })();
     return () => { cancelled = true; };
   }, [biometricCredentialId, onUnlocked]);
@@ -57,16 +61,16 @@ export function LockScreen({ pinHash, biometricCredentialId, onUnlocked }: LockS
     const ok = await verifyPin(pin, pinHash);
     busy.current = false;
     if (ok) {
+      resetAttempts();
       onUnlocked();
       return;
     }
-    const next = attempts + 1;
-    setAttempts(next);
     setPin('');
-    if (next >= MAX_ATTEMPTS) {
+    const status = registerFailedAttempt();
+    if (status.lockedOut) {
       // The live countdown is rendered from `cooldown` below, so don't freeze
       // the seconds into `error` state here.
-      setCooldown(BACKOFF_SECONDS);
+      setCooldown(Math.ceil(status.retryAfterMs / 1000));
       setError(null);
     } else {
       setError(t('wrongPin'));
@@ -78,8 +82,12 @@ export function LockScreen({ pinHash, biometricCredentialId, onUnlocked }: LockS
     busy.current = true;
     const ok = await authenticateWithBiometric(biometricCredentialId);
     busy.current = false;
-    if (ok) onUnlocked();
-    else setError(t('biometricFailed'));
+    if (ok) {
+      resetAttempts();
+      onUnlocked();
+    } else {
+      setError(t('biometricFailed'));
+    }
   }
 
   return (
