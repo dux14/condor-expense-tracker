@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Expense, Category } from '@/lib/domain/types';
+import type { Expense, Category, Budget } from '@/lib/domain/types';
 import { PRESET_CATEGORIES, OTROS_ID } from '@/lib/domain/presets';
 import { todayKey, todayMonthKey } from '@/lib/format/date';
 import {
@@ -9,6 +9,7 @@ import {
   spendByDay,
   deltaVsPrevMonth,
   transactionsByDay,
+  budgetProgress,
 } from '@/lib/domain/selectors';
 
 // ---------------------------------------------------------------------------
@@ -436,5 +437,104 @@ describe('transactionsByDay', () => {
 
   it('returns empty array when no expenses in month', () => {
     expect(transactionsByDay([], CATS, '2026-06')).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// budgetProgress
+// ---------------------------------------------------------------------------
+
+function makeBudget(over: Partial<Budget> = {}): Budget {
+  return {
+    id: `budget-${Math.random().toString(36).slice(2)}`,
+    categoryId: 'preset-comida',
+    amountBase: 100000,
+    period: 'monthly',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+    ...over,
+  };
+}
+
+describe('budgetProgress', () => {
+  it('returns [] when there are no budgets', () => {
+    const expenses = [makeExpense({ date: '2026-06-10', amount: 5000 })];
+    expect(budgetProgress(expenses, [], '2026-06')).toEqual([]);
+  });
+
+  it('emits no row for a category that has no budget (quiet UI)', () => {
+    const expenses = [makeExpense({ categoryId: 'preset-comida', date: '2026-06-10' })];
+    const budgets = [makeBudget({ categoryId: 'preset-transporte' })];
+    const rows = budgetProgress(expenses, budgets, '2026-06');
+    expect(rows.map((r) => r.categoryId)).toEqual(['preset-transporte']);
+    expect(rows[0].spentBase).toBe(0); // budgeted category with zero spend still shows
+  });
+
+  it('computes spent/budget/pct/over for a month WITH expenses', () => {
+    const expenses = [
+      makeExpense({ categoryId: 'preset-comida', date: '2026-06-05', baseAmount: 30000, amount: 30000 }),
+      makeExpense({ categoryId: 'preset-comida', date: '2026-06-20', baseAmount: 20000, amount: 20000 }),
+      makeExpense({ categoryId: 'preset-comida', date: '2026-05-31', baseAmount: 99999, amount: 99999 }), // prev month — excluded
+    ];
+    const budgets = [makeBudget({ categoryId: 'preset-comida', amountBase: 100000 })];
+    const [row] = budgetProgress(expenses, budgets, '2026-06');
+    expect(row).toEqual({ categoryId: 'preset-comida', spentBase: 50000, budgetBase: 100000, pct: 50, over: false });
+  });
+
+  it('a month with NO expenses yields spent=0, pct=0, not over', () => {
+    const budgets = [makeBudget({ categoryId: 'preset-comida', amountBase: 100000 })];
+    const [row] = budgetProgress([], budgets, '2026-06');
+    expect(row).toEqual({ categoryId: 'preset-comida', spentBase: 0, budgetBase: 100000, pct: 0, over: false });
+  });
+
+  it('spend exactly equal to budget (100%) is NOT over', () => {
+    const expenses = [makeExpense({ categoryId: 'preset-comida', date: '2026-06-10', baseAmount: 100000, amount: 100000 })];
+    const budgets = [makeBudget({ categoryId: 'preset-comida', amountBase: 100000 })];
+    const [row] = budgetProgress(expenses, budgets, '2026-06');
+    expect(row.pct).toBe(100);
+    expect(row.over).toBe(false);
+  });
+
+  it('spend above budget marks over and pct can exceed 100 (not clamped)', () => {
+    const expenses = [makeExpense({ categoryId: 'preset-comida', date: '2026-06-10', baseAmount: 180000, amount: 180000 })];
+    const budgets = [makeBudget({ categoryId: 'preset-comida', amountBase: 100000 })];
+    const [row] = budgetProgress(expenses, budgets, '2026-06');
+    expect(row.pct).toBe(180);
+    expect(row.over).toBe(true);
+  });
+
+  it('budgetBase === 0: pct is 0, over only when something was spent', () => {
+    const zeroBudget = [makeBudget({ categoryId: 'preset-comida', amountBase: 0 })];
+    expect(budgetProgress([], zeroBudget, '2026-06')[0]).toMatchObject({ pct: 0, over: false });
+    const spent = [makeExpense({ categoryId: 'preset-comida', date: '2026-06-10', baseAmount: 10, amount: 10 })];
+    expect(budgetProgress(spent, zeroBudget, '2026-06')[0]).toMatchObject({ pct: 0, over: true });
+  });
+
+  it('skips expenses with null baseAmount when summing spent', () => {
+    const expenses = [
+      makeExpense({ categoryId: 'preset-comida', date: '2026-06-10', baseAmount: 40000, amount: 40000 }),
+      makeExpense({ categoryId: 'preset-comida', date: '2026-06-11', baseAmount: null, amount: 5, currency: 'USD', fxRate: null }),
+    ];
+    const budgets = [makeBudget({ categoryId: 'preset-comida', amountBase: 100000 })];
+    expect(budgetProgress(expenses, budgets, '2026-06')[0].spentBase).toBe(40000);
+  });
+
+  it('dedupes multiple budgets for the same category, keeping the newest updatedAt', () => {
+    const budgets = [
+      makeBudget({ categoryId: 'preset-comida', amountBase: 100000, updatedAt: '2026-01-01T00:00:00.000Z' }),
+      makeBudget({ categoryId: 'preset-comida', amountBase: 200000, updatedAt: '2026-06-01T00:00:00.000Z' }),
+    ];
+    const rows = budgetProgress([], budgets, '2026-06');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].budgetBase).toBe(200000);
+  });
+
+  it('output is sorted by categoryId asc', () => {
+    const budgets = [
+      makeBudget({ categoryId: 'preset-transporte' }),
+      makeBudget({ categoryId: 'preset-comida' }),
+    ];
+    expect(budgetProgress([], budgets, '2026-06').map((r) => r.categoryId))
+      .toEqual(['preset-comida', 'preset-transporte']);
   });
 });
