@@ -37,7 +37,21 @@
     "budget_placeholder": "Sin presupuesto",
     "budget_optional": "Opcional",
     "spentOfBudget": "{spent} de {budget}",
-    "overBudget": "Sobre el presupuesto"
+    "overBudget": "Sobre el presupuesto",
+    "iconGroup": {
+      "food": "Comida y bebida",
+      "transport": "Transporte",
+      "home": "Hogar",
+      "shopping": "Compras",
+      "health": "Salud",
+      "leisure": "Ocio",
+      "finance": "Finanzas",
+      "travel": "Viajes",
+      "pets": "Mascotas",
+      "education": "Educación",
+      "tech": "Tecnología",
+      "other": "Otros"
+    }
   },
   "Nav": {
     "home": "Inicio",

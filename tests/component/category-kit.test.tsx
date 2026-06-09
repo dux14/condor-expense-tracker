@@ -6,6 +6,7 @@ import { CategoryChip } from '@/components/category/CategoryChip'
 import { ColorSwatchPicker } from '@/components/category/ColorSwatchPicker'
 import { NewCategorySheet } from '@/components/category/NewCategorySheet'
 import { BudgetProgressLine } from '@/components/category/BudgetProgressLine'
+import { IconPicker } from '@/components/category/IconPicker'
 import type { Category } from '@/lib/domain/types'
 import { CATEGORY_PALETTE } from '@/lib/domain/palette'
 
@@ -34,6 +35,20 @@ const messages = {
     budget_optional: 'Opcional',
     spentOfBudget: '{spent} de {budget}',
     overBudget: 'Sobre el presupuesto',
+    iconGroup: {
+      food: 'Comida y bebida',
+      transport: 'Transporte',
+      home: 'Hogar',
+      shopping: 'Compras',
+      health: 'Salud',
+      leisure: 'Ocio',
+      finance: 'Finanzas',
+      travel: 'Viajes',
+      pets: 'Mascotas',
+      education: 'Educación',
+      tech: 'Tecnología',
+      other: 'Otros',
+    },
   },
 }
 
@@ -150,6 +165,31 @@ describe('NewCategorySheet budget field', () => {
         onSubmit={vi.fn()} />,
     ))
     expect(screen.getByLabelText(/presupuesto mensual/i)).toHaveValue('300000')
+  })
+})
+
+describe('IconPicker', () => {
+  it('renders buttons for original and new keys and fires onChange', async () => {
+    const onChange = vi.fn()
+    render(withIntl(<IconPicker value="comida" onChange={onChange} />))
+
+    expect(screen.getByRole('button', { name: 'comida' })).toBeInTheDocument()
+    const coffee = screen.getByRole('button', { name: 'food-coffee' })
+    expect(coffee).toBeInTheDocument()
+
+    await userEvent.click(coffee)
+    expect(onChange).toHaveBeenCalledWith('food-coffee')
+  })
+
+  it('marks the selected value button with aria-pressed="true"', () => {
+    render(withIntl(<IconPicker value="comida" onChange={vi.fn()} />))
+    const selectedButton = screen.getByRole('button', { name: 'comida' })
+    expect(selectedButton).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('renders at least one group header', () => {
+    render(withIntl(<IconPicker value="comida" onChange={vi.fn()} />))
+    expect(screen.getByText('Comida y bebida')).toBeInTheDocument()
   })
 })
 
